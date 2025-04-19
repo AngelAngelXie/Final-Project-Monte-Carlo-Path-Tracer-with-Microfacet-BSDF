@@ -4,8 +4,8 @@
 
 #include "Renderer.hpp"
 #include "Scene.hpp"
-#include "Vector.hpp"
 #include "global.hpp"
+#include <Eigen/Dense>
 #include <fstream>
 #include <future>
 #include <thread>
@@ -26,7 +26,7 @@ void Renderer::Render(const Scene &scene) {
     int m = 0;
 
     // change the spp value to change sample ammount
-    int spp = 64;
+    int spp = 8;
     std::cout << "SPP: " << spp << "\n";
     for (uint32_t j = 0; j < scene.height; ++j) {
         for (uint32_t i = 0; i < scene.width; ++i) {
@@ -37,6 +37,17 @@ void Renderer::Render(const Scene &scene) {
 
             Vector3f dir = Vector3f(-x, y, 1);
             const float DF = 0.3;
+            /*    single thread
+            auto rand_with_neg = []() { return get_random_float() - .5; };
+            for (int k = 0; k < spp; k++) {
+                Vector3f offset =
+                    Vector3f(rand_with_neg(), rand_with_neg(), 0) * DF /
+                    scene.height * scale;
+                auto color = scene.castRay(Ray(eye_pos, dir + offset), 0);
+                framebuffer[m] += color / spp;
+            }
+            */
+            /*    multi-thread    */
             std::vector<std::thread> threads(spp);
             std::vector<std::future<Vector3f>> futures(spp);
             auto rand_with_neg = []() { return get_random_float() - .5; };
@@ -49,13 +60,14 @@ void Renderer::Render(const Scene &scene) {
                         return scene.castRay(Ray(ori, dir), 0);
                     });
                 futures[k] = task.get_future();
-                threads[k] = std::thread(std::move(task), eye_pos,
-                                         normalize(dir + offset));
+                threads[k] =
+                    std::thread(std::move(task), eye_pos, (dir + offset));
             }
             for (int k = 0; k < spp; k++) {
                 threads[k].join();
                 framebuffer[m] += futures[k].get() / spp;
             }
+            /**/
             m++;
         }
         UpdateProgress(j / (float)scene.height);
@@ -67,12 +79,15 @@ void Renderer::Render(const Scene &scene) {
     (void)fprintf(fp, "P6\n%d %d\n255\n", scene.width, scene.height);
     for (auto i = 0; i < scene.height * scene.width; ++i) {
         static unsigned char color[3];
-        color[0] = (unsigned char)(255 * std::pow(clamp(0, 1, framebuffer[i].x),
-                                                  0.6f));
-        color[1] = (unsigned char)(255 * std::pow(clamp(0, 1, framebuffer[i].y),
-                                                  0.6f));
-        color[2] = (unsigned char)(255 * std::pow(clamp(0, 1, framebuffer[i].z),
-                                                  0.6f));
+        color[0] =
+            (unsigned char)(255 *
+                            std::pow(clamp(0, 1, framebuffer[i].x()), 0.6f));
+        color[1] =
+            (unsigned char)(255 *
+                            std::pow(clamp(0, 1, framebuffer[i].y()), 0.6f));
+        color[2] =
+            (unsigned char)(255 *
+                            std::pow(clamp(0, 1, framebuffer[i].z()), 0.6f));
         fwrite(color, 1, 3, fp);
     }
     fclose(fp);

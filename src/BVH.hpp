@@ -5,15 +5,15 @@
 #ifndef RAYTRACING_BVH_H
 #define RAYTRACING_BVH_H
 
-#include <atomic>
-#include <vector>
-#include <memory>
-#include <ctime>
-#include "Object.hpp"
-#include "Ray.hpp"
 #include "Bounds3.hpp"
 #include "Intersection.hpp"
-#include "Vector.hpp"
+#include "Object.hpp"
+#include "Ray.hpp"
+#include <Eigen/Dense>
+#include <atomic>
+#include <ctime>
+#include <memory>
+#include <vector>
 
 struct BVHBuildNode;
 // BVHAccel Forward Declarations
@@ -23,29 +23,30 @@ struct BVHPrimitiveInfo;
 inline int leafNodes, totalLeafNodes, totalPrimitives, interiorNodes;
 class BVHAccel {
 
-public:
+  public:
     // BVHAccel Public Types
     enum class SplitMethod { NAIVE, SAH };
 
     // BVHAccel Public Methods
-    BVHAccel(std::vector<Object*> p, int maxPrimsInNode = 1, SplitMethod splitMethod = SplitMethod::NAIVE);
+    BVHAccel(std::vector<Object *> p, int maxPrimsInNode = 1,
+             SplitMethod splitMethod = SplitMethod::NAIVE);
     Bounds3 WorldBound() const;
     ~BVHAccel();
 
     Intersection Intersect(const Ray &ray) const;
-    Intersection getIntersection(BVHBuildNode* node, const Ray& ray)const;
+    Intersection getIntersection(BVHBuildNode *node, const Ray &ray) const;
     bool IntersectP(const Ray &ray) const;
-    BVHBuildNode* root;
+    BVHBuildNode *root;
 
     // BVHAccel Private Methods
-    BVHBuildNode* recursiveBuild(std::vector<Object*>objects);
+    BVHBuildNode *recursiveBuild(std::vector<Object *> objects);
 
     // BVHAccel Private Data
     const int maxPrimsInNode;
     const SplitMethod splitMethod;
-    std::vector<Object*> primitives;
+    std::vector<Object *> primitives;
 
-    void getSample(BVHBuildNode* node, float p, Intersection &pos, float &pdf);
+    void getSample(BVHBuildNode *node, float p, Intersection &pos, float &pdf);
     void Sample(Intersection &pos, float &pdf);
 };
 
@@ -53,20 +54,18 @@ struct BVHBuildNode {
     Bounds3 bounds;
     BVHBuildNode *left;
     BVHBuildNode *right;
-    Object* object;
+    Object *object;
     float area;
 
-public:
-    int splitAxis=0, firstPrimOffset=0, nPrimitives=0;
+  public:
+    int splitAxis = 0, firstPrimOffset = 0, nPrimitives = 0;
     // BVHBuildNode Public Methods
-    BVHBuildNode(){
+    BVHBuildNode() {
         bounds = Bounds3();
-        left = nullptr;right = nullptr;
+        left = nullptr;
+        right = nullptr;
         object = nullptr;
     }
 };
 
-
-
-
-#endif //RAYTRACING_BVH_H
+#endif // RAYTRACING_BVH_H

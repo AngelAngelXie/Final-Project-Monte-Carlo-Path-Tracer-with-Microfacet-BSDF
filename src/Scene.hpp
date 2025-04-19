@@ -6,10 +6,11 @@
 
 #include "AreaLight.hpp"
 #include "BVH.hpp"
+#include "Eigen/src/Core/Matrix.h"
 #include "Light.hpp"
 #include "Object.hpp"
 #include "Ray.hpp"
-#include "Vector.hpp"
+#include <Eigen/Dense>
 #include <vector>
 
 class Scene {
@@ -52,7 +53,7 @@ class Scene {
 
     // Compute reflection direction
     Vector3f reflect(const Vector3f &I, const Vector3f &N) const {
-        return I - 2 * dotProduct(I, N) * N;
+        return I - 2 * I.dot(N) * N;
     }
 
     // Compute refraction direction using Snell's law
@@ -69,7 +70,7 @@ class Scene {
     // negate the normal N
     Vector3f refract(const Vector3f &I, const Vector3f &N,
                      const float &ior) const {
-        float cosi = clamp(-1, 1, dotProduct(I, N));
+        float cosi = clamp(-1, 1, I.dot(N));
         float etai = 1, etat = ior;
         Vector3f n = N;
         if (cosi < 0) {
@@ -80,7 +81,7 @@ class Scene {
         }
         float eta = etai / etat;
         float k = 1 - eta * eta * (1 - cosi * cosi);
-        return k < 0 ? 0 : eta * I + (eta * cosi - sqrtf(k)) * n;
+        return k < 0 ? Vector3f() : eta * I + (eta * cosi - sqrtf(k)) * n;
     }
 
     // Compute Fresnel equation
@@ -94,7 +95,7 @@ class Scene {
     // \param[out] kr is the amount of light reflected
     void fresnel(const Vector3f &I, const Vector3f &N, const float &ior,
                  float &kr) const {
-        float cosi = clamp(-1, 1, dotProduct(I, N));
+        float cosi = clamp(-1, 1, I.dot(N));
         float etai = 1, etat = ior;
         if (cosi > 0) {
             std::swap(etai, etat);

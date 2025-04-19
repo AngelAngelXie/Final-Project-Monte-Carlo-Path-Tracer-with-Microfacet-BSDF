@@ -4,19 +4,19 @@
 
 #ifndef RAYTRACING_INTERSECTION_H
 #define RAYTRACING_INTERSECTION_H
-#include "Vector.hpp"
 #include "Material.hpp"
+#include <Eigen/Dense>
+using namespace Eigen;
 class Object;
 
-struct Intersection
-{
-    Intersection(){
-        happened=false;
-        coords=Vector3f();
-        normal=Vector3f();
-        distance= std::numeric_limits<double>::max();
-        obj =nullptr;
-        m=nullptr;
+struct Intersection {
+    Intersection() {
+        happened = false;
+        coords = Vector3f();
+        normal = Vector3f();
+        distance = std::numeric_limits<double>::max();
+        obj = nullptr;
+        m = nullptr;
     }
     bool happened;
     Vector3f coords;
@@ -24,7 +24,7 @@ struct Intersection
     Vector3f normal;
     Vector3f emit;
     double distance;
-    Object* obj;
-    Material* m;
+    Object *obj;
+    Material *m;
 };
-#endif //RAYTRACING_INTERSECTION_H
+#endif // RAYTRACING_INTERSECTION_H

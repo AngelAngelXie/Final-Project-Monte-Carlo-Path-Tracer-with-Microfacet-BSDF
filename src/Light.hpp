@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "Vector.hpp"
+#include <Eigen/Dense>
+using namespace Eigen;
 
-class Light
-{
-public:
+class Light {
+  public:
     Light(const Vector3f &p, const Vector3f &i) : position(p), intensity(i) {}
     virtual ~Light() = default;
     Vector3f position;

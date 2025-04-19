@@ -2,7 +2,14 @@ cmake_minimum_required(VERSION 3.10)
 project(RayTracing)
 
 set(CMAKE_CXX_STANDARD 17)
+# For debugging
+# set(CMAKE_CXX_FLAGS "-DDEBUG")
 
-add_executable(RayTracing main.cpp Object.hpp Vector.cpp Vector.hpp global.hpp Triangle.hpp Scene.cpp
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
+add_executable(RayTracing main.cpp Object.hpp global.hpp Triangle.hpp Scene.cpp
         Scene.hpp Light.hpp AreaLight.hpp BVH.cpp BVH.hpp Bounds3.hpp Ray.hpp Material.hpp Intersection.hpp
         Renderer.cpp Renderer.hpp)
+
+target_link_libraries(RayTracing ${OpenCV_LIBRARIES})

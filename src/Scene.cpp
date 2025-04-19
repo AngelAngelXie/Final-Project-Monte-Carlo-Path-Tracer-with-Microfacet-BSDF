@@ -3,7 +3,7 @@
 //
 
 #include "Scene.hpp"
-#include "Vector.hpp"
+#include <Eigen/Dense>
 
 void Scene::buildBVH() {
     printf(" - Generating BVH...\n\n");
@@ -56,7 +56,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
     // TO DO Implement Path Tracing Algorithm here
     auto inter = intersect(ray);
     if (!inter.happened) {
-        return Vector3f(0);
+        return Vector3f::Zero();
     }
     if (depth == 0 && inter.obj->hasEmit()) {
         return inter.m->getEmission();
@@ -71,25 +71,25 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
     auto p_light = inter.coords;
     auto n_light = inter.normal;
     auto emit = inter.emit;
-    auto ws = normalize(p_light - p);
+    auto ws = (p_light - p).normalized();
     auto dist = (p_light - p).norm();
     Ray rlight(p, ws);
     inter = intersect(rlight);
-    Vector3f l_dir(0.);
+    Vector3f l_dir = Vector3f::Zero();
     if (inter.happened && std::abs(inter.distance - dist) < EPSILON) {
-        l_dir = emit * m->eval(wo, ws, n) * dotProduct(ws, n) *
-                dotProduct(-ws, n_light) / (dist * dist) / pdf;
+        l_dir = emit.cwiseProduct(m->eval(wo, ws, n)) * (ws.dot(n)) *
+                ((-ws).dot(n_light)) / (dist * dist) / pdf;
     }
 
-    Vector3f l_ind(0.);
+    Vector3f l_ind = Vector3f::Zero();
     float rr = get_random_float();
     if (rr < RussianRoulette) {
         auto wi = m->sample(wo, n);
         Ray r(p, wi);
         inter = intersect(r);
         if (inter.happened && !inter.obj->hasEmit()) {
-            l_ind = castRay(r, depth + 1) * m->eval(wo, wi, n) *
-                    dotProduct(wi, n) / m->pdf(wo, wi, n) / RussianRoulette;
+            l_ind = castRay(r, depth + 1).cwiseProduct(m->eval(wo, wi, n)) *
+                    wi.dot(n) / m->pdf(wo, wi, n) * (1. / RussianRoulette);
         }
     }
     return l_dir + l_ind;
