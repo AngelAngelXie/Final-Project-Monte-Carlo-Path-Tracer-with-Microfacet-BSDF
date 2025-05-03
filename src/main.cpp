@@ -11,8 +11,10 @@
 // function().
 int main(int argc, char **argv) {
 
+    Camera camera(384, 384);
+    camera.position = Vector3f(278, 273, -800);
     // Change the definition here to change resolution
-    Scene scene(Camera(384, 384));
+    Scene scene(camera);
 
     Material *red = new Material(DIFFUSE, Vector3f::Zero());
     red->Kd = Vector3f(0.63f, 0.065f, 0.05f);

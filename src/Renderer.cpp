@@ -3,6 +3,7 @@
 //
 
 #include "Renderer.hpp"
+#include "Eigen/src/Core/Matrix.h"
 #include "Scene.hpp"
 #include "global.hpp"
 #include <Eigen/Dense>
@@ -21,7 +22,9 @@ void Renderer::Render(const Scene &scene) {
 
     float scale = tan(deg2rad(camera.fov * 0.5));
     float imageAspectRatio = camera.width / (float)camera.height;
-    Vector3f eye_pos(278, 273, -800);
+    // Vector3f eye_pos(278, 273, -800);
+    Vector3f eye_pos = camera.position;
+    Matrix3f orientation = camera.getOrientation();
 
     // change the spp value to change sample ammount
     int spp = this->spp;
@@ -41,6 +44,7 @@ void Renderer::Render(const Scene &scene) {
                     scale;
 
                 Vector3f dir = Vector3f(x, y, 1).normalized();
+                dir = orientation * dir;
                 auto color = scene.castRay(Ray(eye_pos, dir), 0);
                 framebuffer[m] += color / spp;
             }
