@@ -6,6 +6,7 @@
 
 #include "AreaLight.hpp"
 #include "BVH.hpp"
+#include "Camera.hpp"
 #include "Eigen/src/Core/Matrix.h"
 #include "Light.hpp"
 #include "Object.hpp"
@@ -16,14 +17,12 @@
 class Scene {
   public:
     // setting up options
-    int width = 1280;
-    int height = 960;
-    double fov = 40;
+    Camera camera;
     Vector3f backgroundColor = Vector3f(0.235294, 0.67451, 0.843137);
     int maxDepth = 1;
     float RussianRoulette = 0.75;
 
-    Scene(int w, int h) : width(w), height(h) {}
+    Scene(Camera camera) : camera(camera) {}
 
     void Add(Object *object) { objects.push_back(object); }
     void Add(std::unique_ptr<Light> light) {

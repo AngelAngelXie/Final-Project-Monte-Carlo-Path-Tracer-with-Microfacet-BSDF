@@ -12,7 +12,7 @@
 int main(int argc, char **argv) {
 
     // Change the definition here to change resolution
-    Scene scene(384, 384);
+    Scene scene(Camera(384, 384));
 
     Material *red = new Material(DIFFUSE, Vector3f::Zero());
     red->Kd = Vector3f(0.63f, 0.065f, 0.05f);

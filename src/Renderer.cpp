@@ -6,10 +6,7 @@
 #include "Scene.hpp"
 #include "global.hpp"
 #include <Eigen/Dense>
-#include <fstream>
-#include <future>
 #include <omp.h>
-#include <thread>
 
 inline float deg2rad(const float &deg) { return deg * M_PI / 180.0; }
 
@@ -19,45 +16,44 @@ const float EPSILON = 0.00001;
 // generate primary rays and cast these rays into the scene. The content of the
 // framebuffer is saved to a file.
 void Renderer::Render(const Scene &scene) {
-    std::vector<Vector3f> framebuffer(scene.width * scene.height);
+    Camera camera = scene.camera;
+    std::vector<Vector3f> framebuffer(camera.width * camera.height);
 
-    float scale = tan(deg2rad(scene.fov * 0.5));
-    float imageAspectRatio = scene.width / (float)scene.height;
+    float scale = tan(deg2rad(camera.fov * 0.5));
+    float imageAspectRatio = camera.width / (float)camera.height;
     Vector3f eye_pos(278, 273, -800);
 
     // change the spp value to change sample ammount
-    int spp = 8;
+    int spp = this->spp;
     std::cout << "SPP: " << spp << "\n";
     float prog = 0.;
-#pragma omp parallel for num_threads(8)
-    for (uint32_t j = 0; j < scene.height; ++j) {
-        for (uint32_t i = 0; i < scene.width; ++i) {
+#pragma omp parallel for num_threads(this->parellelism)
+    for (uint32_t j = 0; j < camera.height; ++j) {
+        for (uint32_t i = 0; i < camera.width; ++i) {
             // generate primary ray direction
-            float x = (2 * (i + 0.5) / (float)scene.width - 1) *
-                      imageAspectRatio * scale;
-            float y = (1 - 2 * (j + 0.5) / (float)scene.height) * scale;
-
-            Vector3f dir = Vector3f(-x, y, 1);
-            const float DF = 0.3;
-            int m = i + j * scene.width;
-            auto rand_with_neg = []() { return get_random_float() - .5; };
+            int m = i + j * camera.width;
             for (int k = 0; k < spp; k++) {
-                Vector3f offset =
-                    Vector3f(rand_with_neg(), rand_with_neg(), 0) * DF /
-                    scene.height * scale;
-                auto color = scene.castRay(Ray(eye_pos, dir + offset), 0);
+                float x =
+                    (1 - 2 * (i + get_random_float()) / (float)camera.width) *
+                    imageAspectRatio * scale;
+                float y =
+                    (1 - 2 * (j + get_random_float()) / (float)camera.height) *
+                    scale;
+
+                Vector3f dir = Vector3f(x, y, 1).normalized();
+                auto color = scene.castRay(Ray(eye_pos, dir), 0);
                 framebuffer[m] += color / spp;
             }
         }
-        prog += 1.f / scene.height;
+        prog += 1.f / camera.height;
         UpdateProgress(prog);
     }
     UpdateProgress(1.f);
 
     // save framebuffer to file
     FILE *fp = fopen("binary.ppm", "wb");
-    (void)fprintf(fp, "P6\n%d %d\n255\n", scene.width, scene.height);
-    for (auto i = 0; i < scene.height * scene.width; ++i) {
+    (void)fprintf(fp, "P6\n%d %d\n255\n", camera.width, camera.height);
+    for (auto i = 0; i < camera.height * camera.width; ++i) {
         static unsigned char color[3];
         color[0] =
             (unsigned char)(255 *
