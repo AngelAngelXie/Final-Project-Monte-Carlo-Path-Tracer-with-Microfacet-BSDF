@@ -8,6 +8,7 @@
 #include <Eigen/Dense>
 #include <fstream>
 #include <future>
+#include <omp.h>
 #include <thread>
 
 inline float deg2rad(const float &deg) { return deg * M_PI / 180.0; }
@@ -23,11 +24,12 @@ void Renderer::Render(const Scene &scene) {
     float scale = tan(deg2rad(scene.fov * 0.5));
     float imageAspectRatio = scene.width / (float)scene.height;
     Vector3f eye_pos(278, 273, -800);
-    int m = 0;
 
     // change the spp value to change sample ammount
     int spp = 8;
     std::cout << "SPP: " << spp << "\n";
+    float prog = 0.;
+#pragma omp parallel for num_threads(8)
     for (uint32_t j = 0; j < scene.height; ++j) {
         for (uint32_t i = 0; i < scene.width; ++i) {
             // generate primary ray direction
@@ -37,7 +39,7 @@ void Renderer::Render(const Scene &scene) {
 
             Vector3f dir = Vector3f(-x, y, 1);
             const float DF = 0.3;
-            /*    single thread
+            int m = i + j * scene.width;
             auto rand_with_neg = []() { return get_random_float() - .5; };
             for (int k = 0; k < spp; k++) {
                 Vector3f offset =
@@ -46,31 +48,9 @@ void Renderer::Render(const Scene &scene) {
                 auto color = scene.castRay(Ray(eye_pos, dir + offset), 0);
                 framebuffer[m] += color / spp;
             }
-            */
-            /*    multi-thread    */
-            std::vector<std::thread> threads(spp);
-            std::vector<std::future<Vector3f>> futures(spp);
-            auto rand_with_neg = []() { return get_random_float() - .5; };
-            for (int k = 0; k < spp; k++) {
-                Vector3f offset =
-                    Vector3f(rand_with_neg(), rand_with_neg(), 0) * DF /
-                    scene.height * scale;
-                std::packaged_task<Vector3f(Vector3f, Vector3f)> task(
-                    [&](Vector3f ori, Vector3f dir) {
-                        return scene.castRay(Ray(ori, dir), 0);
-                    });
-                futures[k] = task.get_future();
-                threads[k] =
-                    std::thread(std::move(task), eye_pos, (dir + offset));
-            }
-            for (int k = 0; k < spp; k++) {
-                threads[k].join();
-                framebuffer[m] += futures[k].get() / spp;
-            }
-            /**/
-            m++;
         }
-        UpdateProgress(j / (float)scene.height);
+        prog += 1.f / scene.height;
+        UpdateProgress(prog);
     }
     UpdateProgress(1.f);
 
