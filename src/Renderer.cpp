@@ -30,6 +30,7 @@ void Renderer::Render(const Scene &scene) {
     int spp = this->spp;
     std::cout << "SPP: " << spp << "\n";
     float prog = 0.;
+    init_rngs(this->parellelism);
 #pragma omp parallel for num_threads(this->parellelism)
     for (uint32_t j = 0; j < camera.height; ++j) {
         for (uint32_t i = 0; i < camera.width; ++i) {
