@@ -20,5 +20,5 @@ class Renderer {
 
   private:
     int parellelism = 8;
-    int spp = 8;
+    int spp = 512;
 };
