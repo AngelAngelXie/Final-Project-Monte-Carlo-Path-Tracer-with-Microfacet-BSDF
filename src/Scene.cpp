@@ -16,20 +16,16 @@ Intersection Scene::intersect(const Ray &ray) const {
 
 void Scene::sampleLight(Intersection &pos, float &pdf) const {
     float emit_area_sum = 0;
-    for (uint32_t k = 0; k < objects.size(); ++k) {
-        if (objects[k]->hasEmit()) {
-            emit_area_sum += objects[k]->getArea();
-        }
+    for (auto lightObj : lightsObjects) {
+        emit_area_sum += lightObj->getArea();
     }
     float p = get_random_float() * emit_area_sum;
     emit_area_sum = 0;
-    for (uint32_t k = 0; k < objects.size(); ++k) {
-        if (objects[k]->hasEmit()) {
-            emit_area_sum += objects[k]->getArea();
-            if (p <= emit_area_sum) {
-                objects[k]->Sample(pos, pdf);
-                break;
-            }
+    for (auto lightObj : lightsObjects) {
+        emit_area_sum += lightObj->getArea();
+        if (p <= emit_area_sum) {
+            lightObj->Sample(pos, pdf);
+            break;
         }
     }
 }
@@ -66,18 +62,20 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
     auto wo = -ray.direction;
 
     float pdf;
-    sampleLight(inter, pdf);
-    auto p_light = inter.coords;
-    auto n_light = inter.normal;
-    auto emit = inter.emit;
-    auto ws = (p_light - p).normalized();
-    auto dist = (p_light - p).norm();
-    Ray rlight(p, ws);
-    inter = intersect(rlight);
     Vector3f l_dir = Vector3f::Zero();
-    if (inter.happened && std::abs(inter.distance - dist) < EPSILON) {
-        l_dir = emit.cwiseProduct(m->eval(wo, ws, n)) * (ws.dot(n)) *
-                ((-ws).dot(n_light)) / (dist * dist) / pdf;
+    for (int i = 0; i < 4; i++) {
+        sampleLight(inter, pdf);
+        auto p_light = inter.coords;
+        auto n_light = inter.normal;
+        auto emit = inter.emit;
+        auto ws = (p_light - p).normalized();
+        auto dist = (p_light - p).norm();
+        Ray rlight(p, ws);
+        inter = intersect(rlight);
+        if (inter.happened && std::abs(inter.distance - dist) < EPSILON) {
+            l_dir += emit.cwiseProduct(m->eval(wo, ws, n)) * (ws.dot(n)) *
+                     ((-ws).dot(n_light)) / (dist * dist) / pdf / 4;
+        }
     }
 
     Vector3f l_ind = Vector3f::Zero();

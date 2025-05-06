@@ -24,7 +24,12 @@ class Scene {
 
     Scene(Camera camera) : camera(camera) {}
 
-    void Add(Object *object) { objects.push_back(object); }
+    void Add(Object *object) {
+        objects.push_back(object);
+        if (object->hasEmit()) {
+            lightsObjects.push_back(object);
+        }
+    }
     void Add(std::unique_ptr<Light> light) {
         lights.push_back(std::move(light));
     }
@@ -48,6 +53,7 @@ class Scene {
 
     // creating the scene (adding objects and lights)
     std::vector<Object *> objects;
+    std::vector<Object *> lightsObjects;
     std::vector<std::unique_ptr<Light>> lights;
 
     // Compute reflection direction
