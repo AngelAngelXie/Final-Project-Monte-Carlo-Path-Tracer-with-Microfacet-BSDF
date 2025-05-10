@@ -9,6 +9,7 @@
 #include "Camera.hpp"
 #include "Eigen/src/Core/Matrix.h"
 #include "Light.hpp"
+#include "Material.hpp"
 #include "Object.hpp"
 #include "Ray.hpp"
 #include <Eigen/Dense>
@@ -51,6 +52,9 @@ class Scene {
                     const Vector3f &N, const Vector3f &shadowPointOrig,
                     const std::vector<Object *> &objects, uint32_t &index,
                     const Vector3f &dir, float specularExponent);
+
+    Vector3f directLighting(const Vector3f &wo, const Vector3f &p,
+                            const Vector3f &n, Material *m) const;
 
     // creating the scene (adding objects and lights)
     std::vector<Object *> objects;

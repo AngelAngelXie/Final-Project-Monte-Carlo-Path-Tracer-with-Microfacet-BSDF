@@ -3,6 +3,8 @@
 //
 
 #include "Scene.hpp"
+#include "Eigen/src/Core/Matrix.h"
+#include "Material.hpp"
 #include <Eigen/Dense>
 
 void Scene::buildBVH() {
@@ -47,6 +49,29 @@ bool Scene::trace(const Ray &ray, const std::vector<Object *> &objects,
     return (*hitObject != nullptr);
 }
 
+Vector3f Scene::directLighting(const Vector3f &wo, const Vector3f &p,
+                               const Vector3f &n, Material *m) const {
+    Vector3f l_dir = Vector3f::Zero();
+    float pdf;
+    int n_dir_sample = 4;
+    Intersection inter;
+    for (int i = 0; i < n_dir_sample; i++) {
+        sampleLight(inter, pdf);
+        auto p_light = inter.coords;
+        auto n_light = inter.normal;
+        auto emit = inter.emit;
+        auto ws = (p_light - p).normalized();
+        auto dist = (p_light - p).norm();
+        Ray rlight(p, ws);
+        inter = intersect(rlight);
+        if (inter.happened && std::abs(inter.distance - dist) < EPSILON) {
+            l_dir += emit.cwiseProduct(m->eval(wo, ws, n)) * (ws.dot(n)) *
+                     ((-ws).dot(n_light)) / (dist * dist) / pdf / n_dir_sample;
+        }
+    }
+    return l_dir;
+}
+
 // Implementation of Path Tracing
 Vector3f Scene::castRay(const Ray &ray, int depth) const {
     auto inter = intersect(ray);
@@ -62,43 +87,26 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
     auto wo = -ray.direction;
     float kr = m->fresnel(ray.direction, n);
 
-    float pdf;
-    Vector3f l_dir = Vector3f::Zero();
-
     //  only calculate direct emit if the ray is not inside the object
-    if (wo.dot(n) > 0) {
-        p += n * EPSILON;
-        int n_dir_sample = 4;
-        for (int i = 0; i < n_dir_sample; i++) {
-            sampleLight(inter, pdf);
-            auto p_light = inter.coords;
-            auto n_light = inter.normal;
-            auto emit = inter.emit;
-            auto ws = (p_light - p).normalized();
-            auto dist = (p_light - p).norm();
-            Ray rlight(p, ws);
-            inter = intersect(rlight);
-            if (inter.happened && std::abs(inter.distance - dist) < EPSILON) {
-                l_dir += emit.cwiseProduct(m->eval(wo, ws, n)) * (ws.dot(n)) *
-                         ((-ws).dot(n_light)) / (dist * dist) / pdf /
-                         n_dir_sample * kr;
-            }
-        }
-    }
 
+    Vector3f l_dir = Vector3f::Zero();
     Vector3f l_ind = Vector3f::Zero();
     float rr = get_random_float();
-    if (rr >= this->rrRate) {
-        return l_dir;
-    }
     float rd_flect = get_random_float();
     if (rd_flect < kr) {
         if (wo.dot(n) < 0) { //  inner reflection
-            n = -n;
-            p += n * EPSILON;
-            auto wi = 2 * n.dot(wo) * n - wo;
+            if (rr >= this->rrRate) {
+                return {0, 0, 0};
+            }
+            p -= n * EPSILON;
+            auto wi = -2 * n.dot(wo) * n - wo;
             l_ind = castRay({p, wi}, depth + 1) * invRr;
         } else { //  use BRDF only if the ray is outside
+            p += n * EPSILON;
+            auto l_dir = directLighting(wo, p, n, m);
+            if (rr >= this->rrRate) {
+                return l_dir;
+            }
             auto wi = m->sample(wo, n);
             Ray r(p, wi);
             inter = intersect(r);
@@ -111,9 +119,13 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
         auto dir_fract = m->refract(ray.direction, n);
         if (wo.dot(n) < 0) { //  in-out refraction
             p += n * EPSILON;
+            auto wo_fake = 2 * n.dot(dir_fract) * n - dir_fract;
+            auto l_dir = directLighting(wo_fake, p, n, m);
+            if (rr >= this->rrRate) {
+                return l_dir;
+            }
             //  use BRDF as BSDF by back refraction ray as reflection ray
             //  TODO: switch to real BSDF
-            auto wo_fake = 2 * n.dot(dir_fract) * n - dir_fract;
             auto wi = m->sample(wo_fake, n);
             Ray r(p, wi);
             inter = intersect(r);
@@ -123,7 +135,10 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
                         wi.dot(n) / m->pdf(wo_fake, wi, n) * invRr;
             }
         } else {
-            p -= 2 * n * EPSILON;
+            if (rr >= this->rrRate) {
+                return {0, 0, 0};
+            }
+            p -= n * EPSILON;
             l_ind = castRay({p, dir_fract}, depth + 1) * invRr;
         }
     }

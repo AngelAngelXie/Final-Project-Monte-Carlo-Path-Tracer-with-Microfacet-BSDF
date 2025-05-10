@@ -66,7 +66,7 @@ class Material {
     // negate the normal N
     Vector3f refract(const Vector3f &I, const Vector3f &N) const {
         if (m_type != GLASS) {
-            return Vector3f(0, 0, 0);
+            return {0, 0, 0};
         }
         float cosi = clamp(-1, 1, I.dot(N));
         float etai = 1, etat = ior;
