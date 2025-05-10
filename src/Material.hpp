@@ -1,4 +1,3 @@
-
 #ifndef RAYTRACING_MATERIAL_H
 #define RAYTRACING_MATERIAL_H
 
@@ -7,76 +6,13 @@
 #include <algorithm>
 using namespace Eigen;
 
-enum MaterialType { DIFFUSE };
+enum MaterialType { DIFFUSE, GLASS };
 
 class Material {
   private:
     // Compute reflection direction
     Vector3f reflect(const Vector3f &I, const Vector3f &N) const {
         return I - 2 * I.dot(N) * N;
-    }
-
-    // Compute refraction direction using Snell's law
-    //
-    // We need to handle with care the two possible situations:
-    //
-    //    - When the ray is inside the object
-    //
-    //    - When the ray is outside.
-    //
-    // If the ray is outside, you need to make cosi positive cosi = -N.I
-    //
-    // If the ray is inside, you need to invert the refractive indices and
-    // negate the normal N
-    Vector3f refract(const Vector3f &I, const Vector3f &N,
-                     const float &ior) const {
-        float cosi = clamp(-1, 1, I.dot(N));
-        float etai = 1, etat = ior;
-        Vector3f n = N;
-        if (cosi < 0) {
-            cosi = -cosi;
-        } else {
-            std::swap(etai, etat);
-            n = -N;
-        }
-        float eta = etai / etat;
-        float k = 1 - eta * eta * (1 - cosi * cosi);
-        return (k < 0) ? Vector3f(0, 0, 0)
-                       : eta * I + (eta * cosi - sqrtf(k)) * n;
-    }
-
-    // Compute Fresnel equation
-    //
-    // \param I is the incident view direction
-    //
-    // \param N is the normal at the intersection point
-    //
-    // \param ior is the material refractive index
-    //
-    // \param[out] kr is the amount of light reflected
-    void fresnel(const Vector3f &I, const Vector3f &N, const float &ior,
-                 float &kr) const {
-        float cosi = clamp(-1, 1, I.dot(N));
-        float etai = 1, etat = ior;
-        if (cosi > 0) {
-            std::swap(etai, etat);
-        }
-        // Compute sini using Snell's law
-        float sint = etai / etat * sqrtf(std::max(0.f, 1 - cosi * cosi));
-        // Total internal reflection
-        if (sint >= 1) {
-            kr = 1;
-        } else {
-            float cost = sqrtf(std::max(0.f, 1 - sint * sint));
-            cosi = fabsf(cosi);
-            float Rs = ((etat * cosi) - (etai * cost)) /
-                       ((etat * cosi) + (etai * cost));
-            float Rp = ((etai * cosi) - (etat * cost)) /
-                       ((etai * cosi) + (etat * cost));
-            kr = (Rs * Rs + Rp * Rp) / 2;
-        }
-        // As a consequence of the conservation of energy, transmittance is
-        // given by: kt = 1 - kr;
     }
 
     Vector3f toWorld(const Vector3f &a, const Vector3f &N) {
@@ -115,6 +51,74 @@ class Material {
     // given a ray, calculate the contribution of this ray
     inline Vector3f eval(const Vector3f &wi, const Vector3f &wo,
                          const Vector3f &N);
+
+    // Compute refraction direction using Snell's law
+    //
+    // We need to handle with care the two possible situations:
+    //
+    //    - When the ray is inside the object
+    //
+    //    - When the ray is outside.
+    //
+    // If the ray is outside, you need to make cosi positive cosi = -N.I
+    //
+    // If the ray is inside, you need to invert the refractive indices and
+    // negate the normal N
+    Vector3f refract(const Vector3f &I, const Vector3f &N) const {
+        if (m_type != GLASS) {
+            return Vector3f(0, 0, 0);
+        }
+        float cosi = clamp(-1, 1, I.dot(N));
+        float etai = 1, etat = ior;
+        Vector3f n = N;
+        if (cosi < 0) {
+            cosi = -cosi;
+        } else {
+            std::swap(etai, etat);
+            n = -N;
+        }
+        float eta = etai / etat;
+        float k = 1 - eta * eta * (1 - cosi * cosi);
+        return (k < 0) ? Vector3f(0, 0, 0)
+                       : eta * I + (eta * cosi - sqrtf(k)) * n;
+    }
+
+    // Compute Fresnel equation
+    //
+    // \param I is the incident view direction
+    //
+    // \param N is the normal at the intersection point
+    //
+    // \param ior is the material refractive index
+    //
+    // \return kr is the amount of light reflected
+    float fresnel(const Vector3f &I, const Vector3f &N) const {
+        if (m_type != GLASS) {
+            return 1;
+        }
+        float cosi = clamp(-1, 1, I.dot(N));
+        float etai = 1, etat = ior;
+        if (cosi > 0) {
+            std::swap(etai, etat);
+        }
+        // Compute sini using Snell's law
+        float sint = etai / etat * sqrtf(std::max(0.f, 1 - cosi * cosi));
+        // Total internal reflection
+        if (sint >= 1) {
+            return 1;
+        } else {
+            float cost = sqrtf(std::max(0.f, 1 - sint * sint));
+            cosi = fabsf(cosi);
+            float Rs = ((etat * cosi) - (etai * cost)) /
+                       ((etat * cosi) + (etai * cost));
+            float Rp = ((etai * cosi) - (etat * cost)) /
+                       ((etai * cosi) + (etat * cost));
+            //  assume all lights are non-polarised
+            return (Rs * Rs + Rp * Rp) / 2;
+        }
+        // As a consequence of the conservation of energy, transmittance is
+        // given by: kt = 1 - kr;
+    }
 };
 
 Material::Material(MaterialType t, Vector3f e) {

@@ -2,6 +2,7 @@
 // Created by goksu on 2/25/20.
 //
 #include "Scene.hpp"
+#include "global.hpp"
 
 #pragma once
 struct hit_payload {
@@ -15,7 +16,7 @@ class Renderer {
   public:
     void Render(const Scene &scene);
 
-    void setParallelism(int p) { parellelism = p; }
+    void setParallelism(int p) { parellelism = std::min(p, MAX_THRD); }
     void setSpp(int s) { spp = s; }
 
   private:

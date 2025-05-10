@@ -9,7 +9,7 @@
 #define M_PI 3.141592653589793f
 
 extern const float EPSILON;
-const int MAX_THRD = 16;
+const int MAX_THRD = 32;
 const float kInfinity = std::numeric_limits<float>::max();
 static std::mt19937 RNGS[MAX_THRD];
 
