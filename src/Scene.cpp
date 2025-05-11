@@ -65,7 +65,7 @@ Vector3f Scene::directLighting(const Vector3f &wo, const Vector3f &p,
         Ray rlight(p, ws);
         inter = intersect(rlight);
         if (inter.happened && std::abs(inter.distance - dist) < EPSILON) {
-            l_dir += emit.cwiseProduct(m->eval(wo, ws, n)) * (ws.dot(n)) *
+            l_dir += emit.cwiseProduct(m->eval(ws, wo, n)) * (ws.dot(n)) *
                      ((-ws).dot(n_light)) / (dist * dist) / pdf / n_dir_sample;
         }
     }
@@ -85,35 +85,32 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
     auto n = inter.normal;
     auto m = inter.m;
     auto wo = -ray.direction;
-    float kr = m->fresnel(ray.direction, n);
 
-    //  only calculate direct emit if the ray is not inside the object
+    auto mfn = m->sample(wo, n); //  microfacet normal
+    float kr = m->fresnel(ray.direction, mfn);
 
     Vector3f l_dir = Vector3f::Zero();
     Vector3f l_ind = Vector3f::Zero();
     float rr = get_random_float();
     float rd_flect = get_random_float();
     if (rd_flect < kr) {
-        if (wo.dot(n) < 0) { //  inner reflection
-            if (rr >= this->rrRate) {
-                return {0, 0, 0};
-            }
+        if (wo.dot(mfn) < 0) { //  inner reflection
             p -= n * EPSILON;
-            auto wi = -2 * n.dot(wo) * n - wo;
-            l_ind = castRay({p, wi}, depth + 1) * invRr;
-        } else { //  use BRDF only if the ray is outside
+            mfn = -mfn;
+            n = -n;
+        } else { //  only calc direct lighting when ray is outside
             p += n * EPSILON;
-            auto l_dir = directLighting(wo, p, n, m);
-            if (rr >= this->rrRate) {
-                return l_dir;
-            }
-            auto wi = m->sample(wo, n);
-            Ray r(p, wi);
-            inter = intersect(r);
-            if (inter.happened && !inter.obj->hasEmit()) {
-                l_ind = castRay(r, depth + 1).cwiseProduct(m->eval(wo, wi, n)) *
-                        wi.dot(n) / m->pdf(wo, wi, n) * invRr;
-            }
+            l_dir = directLighting(wo, p, n, m);
+        }
+        if (rr >= this->rrRate) {
+            return l_dir;
+        }
+        auto wi = m->reflect(wo, mfn);
+        Ray r(p, wi);
+        inter = intersect(r);
+        if (inter.happened && !inter.obj->hasEmit()) {
+            l_ind = castRay(r, depth + 1).cwiseProduct(m->eval(wi, wo, n)) *
+                    wi.dot(n) / m->pdf(wi, wo, n) * invRr;
         }
     } else {
         auto dir_fract = m->refract(ray.direction, n);

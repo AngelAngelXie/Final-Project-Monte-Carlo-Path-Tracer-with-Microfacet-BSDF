@@ -20,6 +20,6 @@ class Renderer {
     void setSpp(int s) { spp = s; }
 
   private:
-    int parellelism = 8;
+    int parellelism = 16;
     int spp = 128;
 };
