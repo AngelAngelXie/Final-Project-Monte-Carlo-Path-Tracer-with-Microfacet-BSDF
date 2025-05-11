@@ -49,10 +49,10 @@ int main(int argc, char **argv) {
     //MeshTriangle left("../models/cornellbox/left.obj", red);
     //MeshTriangle right("../models/cornellbox/right.obj", green);
     //MeshTriangle light_("../models/cornellbox/light.obj", light);
-    MeshTriangle floor(root + "/models/floor.obj", Vector3f(0), white);
-    MeshTriangle left(root + "/models/left.obj", Vector3f(0), red);
-    MeshTriangle right(root + "/models/right.obj", Vector3f(0), green);
-    MeshTriangle light_(root + "/models/light.obj", Vector3f(0,-5,0), light);
+    MeshTriangle floor(root + "/models/floor.obj", white);
+    MeshTriangle left(root + "/models/left.obj", red);
+    MeshTriangle right(root + "/models/right.obj", green);
+    MeshTriangle light_(root + "/models/light.obj", light);
     MeshTriangle soldier_1(root + "/models/Soldier.obj", red);
     MeshTriangle king(root + "/models/King.obj", red);
 #endif
