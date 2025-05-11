@@ -10,7 +10,7 @@ find_package(OpenMP REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 add_executable(RayTracing main.cpp Camera.hpp Object.hpp global.hpp Triangle.hpp Scene.cpp
-        Scene.hpp Light.hpp AreaLight.hpp BVH.cpp BVH.hpp Bounds3.hpp Ray.hpp Material.hpp Intersection.hpp
+        Scene.hpp Light.hpp AreaLight.hpp BVH.cpp BVH.hpp Bounds3.hpp Ray.hpp Sphere.hpp Material.hpp Intersection.hpp
         Renderer.cpp Renderer.hpp)
 
 target_link_libraries(RayTracing PUBLIC OpenMP::OpenMP_CXX)

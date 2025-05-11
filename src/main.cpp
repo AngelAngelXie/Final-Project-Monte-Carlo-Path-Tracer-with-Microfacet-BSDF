@@ -1,6 +1,7 @@
 #include "Material.hpp"
 #include "Renderer.hpp"
 #include "Scene.hpp"
+#include "Sphere.hpp"
 #include "Triangle.hpp"
 #include "global.hpp"
 #include <chrono>
@@ -50,12 +51,15 @@ int main(int argc, char **argv) {
     MeshTriangle light_("../models/cornellbox/light.obj", light);
 #endif
 
+    Sphere sphere({400, 90, 130}, 70, white_plas);
+
     scene.Add(&floor);
     scene.Add(&shortbox);
     scene.Add(&tallbox);
     scene.Add(&left);
     scene.Add(&right);
     scene.Add(&light_);
+    scene.Add(&sphere);
 
     scene.buildBVH();
 
