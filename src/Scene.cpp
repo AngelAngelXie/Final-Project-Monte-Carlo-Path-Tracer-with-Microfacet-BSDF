@@ -109,11 +109,16 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
         Ray r(p, wi);
         inter = intersect(r);
         if (inter.happened && !inter.obj->hasEmit()) {
-            l_ind = castRay(r, depth + 1).cwiseProduct(m->eval(wi, wo, n)) *
-                    wi.dot(n) / m->pdf(wi, wo, n) * invRr;
+            if (m->isDirac) {
+                l_ind = castRay(r, depth + 1).cwiseProduct(m->eval(wo, wi, n)) *
+                        invRr;
+            } else {
+                l_ind = castRay(r, depth + 1).cwiseProduct(m->eval(wi, wo, n)) *
+                        wi.dot(n) / m->pdf(wi, wo, n) * invRr;
+            }
         }
     } else {
-        auto dir_fract = m->refract(ray.direction, n);
+        auto dir_fract = m->refract(ray.direction, mfn);
         if (wo.dot(n) < 0) { //  in-out refraction
             p += n * EPSILON;
             auto wo_fake = 2 * n.dot(dir_fract) * n - dir_fract;
@@ -139,5 +144,13 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
             l_ind = castRay({p, dir_fract}, depth + 1) * invRr;
         }
     }
+
+    //  use clamp to avoid fireflies
+    float threshold_ind = 5;
+    l_ind = {
+        clamp(0, threshold_ind, l_ind.x()),
+        clamp(0, threshold_ind, l_ind.y()),
+        clamp(0, threshold_ind, l_ind.z()),
+    };
     return l_dir + l_ind;
 }

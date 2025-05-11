@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 
     Material *red = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
     red->base_reflectance = Vector3f(0.63f, 0.065f, 0.05f);
-    Material *green = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
+    Material *green = new Material(SMOOTH_CONDUCTOR, Vector3f::Zero());
     green->base_reflectance = Vector3f(0.14f, 0.45f, 0.091f);
     Material *white = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
     white->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);

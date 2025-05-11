@@ -126,6 +126,7 @@ class Material {
     Vector3f Kd, Ks; // coefficient of diffuse and specular
     float specularExponent;
     bool textured;
+    bool isDirac; //  Is pdf a dirac delta function
     float roughness;
     Vector3f base_reflectance;
 
@@ -197,7 +198,9 @@ class Material {
 Material::Material(MaterialType t, Vector3f e) {
     m_type = t;
     m_emission = e;
-    ior = 2; // 2
+    isDirac = (t == SMOOTH_CONDUCTOR ||
+               t == SMOOTH_DIELECTRIC); //  dirac delta pdf for smooth
+    ior = 2;
     roughness = 1.0f;
     base_reflectance = Vector3f(0, 0, 0);
 }
