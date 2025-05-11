@@ -21,8 +21,12 @@ int main(int argc, char **argv) {
     red->base_reflectance = Vector3f(0.63f, 0.065f, 0.05f);
     Material *green = new Material(SMOOTH_CONDUCTOR, Vector3f::Zero());
     green->base_reflectance = Vector3f(0.14f, 0.45f, 0.091f);
+    Material *blue = new Material(SMOOTH_CONDUCTOR, Vector3f::Zero());
+    blue->base_reflectance = Vector3f(0.14f, 0.091f, .45f);
     Material *white = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
     white->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
+    Material *white_plas = new Material(ROUGH_DIELECTRIC, Vector3f::Zero());
+    white_plas->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
     Material *light = new Material(
         DIFFUSE, (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
                   15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +

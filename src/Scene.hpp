@@ -55,7 +55,8 @@ class Scene {
     Vector3f calculate_direct_light(Vector3f p, Vector3f wo, Vector3f N) const;
 
     Vector3f directLighting(const Vector3f &wo, const Vector3f &p,
-                            const Vector3f &n, Material *m) const;
+                            const Vector3f &n, Material *m,
+                            bool isReflect = true) const;
 
     // creating the scene (adding objects and lights)
     std::vector<Object *> objects;
