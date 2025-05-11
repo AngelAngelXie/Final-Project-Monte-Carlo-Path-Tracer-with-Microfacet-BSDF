@@ -110,11 +110,13 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
         inter = intersect(r);
         if (inter.happened && !inter.obj->hasEmit()) {
             if (m->isDirac) {
-                l_ind = castRay(r, depth + 1).cwiseProduct(m->eval(wo, wi, n)) *
+                l_ind = castRay(r, depth + 1)
+                            .cwiseProduct(m->eval(wi, wo, n, true)) *
                         invRr;
             } else {
-                l_ind = castRay(r, depth + 1).cwiseProduct(m->eval(wi, wo, n)) *
-                        wi.dot(n) / m->pdf(mfn, wo, n) * invRr;
+                l_ind = castRay(r, depth + 1)
+                            .cwiseProduct(m->eval(wi, wo, n, true)) *
+                        std::abs(wi.dot(n)) / m->pdf(mfn, wo, n) * invRr;
             }
         }
     } else {
@@ -133,12 +135,12 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
         if (inter.happened && !inter.obj->hasEmit()) {
             if (m->isDirac) {
                 l_ind = castRay(r, depth + 1)
-                            .cwiseProduct(m->eval(wo, wi, n, false)) *
+                            .cwiseProduct(m->eval(wi, wo, n, false)) *
                         invRr;
             } else {
                 l_ind = castRay(r, depth + 1)
                             .cwiseProduct(m->eval(wi, wo, n, false)) *
-                        wi.dot(n) / m->pdf(mfn, wo, n) * invRr;
+                        std::abs(wi.dot(n)) / m->pdf(mfn, wo, n) * invRr;
             }
         }
     }

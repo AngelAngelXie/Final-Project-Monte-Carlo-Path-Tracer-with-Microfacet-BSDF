@@ -205,8 +205,11 @@ Material::Material(MaterialType t, Vector3f e) {
     m_emission = e;
     isDirac = (t == SMOOTH_CONDUCTOR ||
                t == SMOOTH_DIELECTRIC); //  dirac delta pdf for smooth
-    ior = 1.3;
-    roughness = 1.0f;
+    ior = 2;
+    roughness = 1.f;
+    if (t == ROUGH_DIELECTRIC) {
+        roughness = 0.01f;
+    }
     base_reflectance = Vector3f(0, 0, 0);
 }
 
@@ -253,7 +256,8 @@ float Material::pdf(const Vector3f &microfacet_normal,
         else
             return 0.0f;
     }
-    case ROUGH_CONDUCTOR: {
+    case ROUGH_CONDUCTOR:
+    case ROUGH_DIELECTRIC: {
         Vector3f h = microfacet_normal;
 
         float D = D_GGX(h, N, roughness);
@@ -264,16 +268,8 @@ float Material::pdf(const Vector3f &microfacet_normal,
         return D * N.dot(h) * jacobian;
     }
     case SMOOTH_CONDUCTOR:
+    case SMOOTH_DIELECTRIC:
         return (microfacet_normal.dot(N) > 1 - EPSILON) ? 1.0f : 0.0f;
-    case ROUGH_DIELECTRIC: {
-        Vector3f h = microfacet_normal;
-        float D = D_GGX(h, N, roughness);
-        float jacobian = 1.0f / (4.0f * outgoing_view.dot(h));
-        return D * N.dot(h) * jacobian;
-    }
-    case SMOOTH_DIELECTRIC: {
-        return (microfacet_normal.dot(N) > 1 - EPSILON) ? 1.0f : 0.0f;
-    }
     default:
         return 0.;
     }
@@ -324,8 +320,11 @@ Vector3f Material::eval(const Vector3f &incoming_light,
     }
     case ROUGH_DIELECTRIC: {
         if (isReflect) {
+            if (incoming_light.dot(N) * outgoing_view.dot(N) <= 0) {
+                return Vector3f::Zero();
+            }
             Vector3f h = (incoming_light + outgoing_view).normalized();
-            h = (h.dot(N) > 0) ? h : -h;
+            h = incoming_light.dot(N) > 0 ? h : -h;
             float F = fresnel(-incoming_light, h);
             float D = D_GGX(h, N, roughness);
             float G = G_SmithGGX(incoming_light, outgoing_view, h, roughness);
@@ -335,14 +334,18 @@ Vector3f Material::eval(const Vector3f &incoming_light,
                           EPSILON;
             return Vector3f::Constant(F) * D * G / denom;
         } else {
-            float eta = (incoming_light.dot(N) > 0) ? ior : 1.0f / ior;
-            Vector3f h = (incoming_light - outgoing_view * eta).normalized();
-            h = (h.dot(N) > 0) ? h : -h;
-            float F = fresnel(-incoming_light, h);
+            if (incoming_light.dot(N) * outgoing_view.dot(N) >= 0) {
+                return Vector3f::Zero();
+            }
+            float eta = (incoming_light.dot(N) > 0) ? ior : 1. / ior;
+            Vector3f h = (-incoming_light - outgoing_view * eta).normalized();
+            float F =
+                fresnel(-incoming_light, (incoming_light.dot(N) > 0 ? h : -h));
             float D = D_GGX(h, N, roughness);
             float G = G_SmithGGX(incoming_light, outgoing_view, h, roughness);
+            // std::cout << F << " " << D << " " << G << std::endl;
             float d1 = incoming_light.dot(h), d2 = outgoing_view.dot(h);
-            float denom = d2 * d2 * eta * eta + d1 * d2 * eta + d1 * d1;
+            float denom = d2 * d2 * eta * eta + 2 * d1 * d2 * eta + d1 * d1;
             return Vector3f::Constant(1.0f - F) * D * G * eta * eta / denom;
         }
     }
