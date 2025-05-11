@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.10)
+project(RayTracing)
+
+set(CMAKE_CXX_STANDARD 17)
+# For debugging
+# set(CMAKE_CXX_FLAGS "-DDEBUG")
+
+find_package(Eigen3 REQUIRED)
+find_package(OpenMP REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
+add_executable(RayTracing main.cpp Camera.hpp Object.hpp global.hpp Triangle.hpp Scene.cpp
+        Scene.hpp Light.hpp AreaLight.hpp BVH.cpp BVH.hpp Bounds3.hpp Ray.hpp Material.hpp Intersection.hpp
+        Renderer.cpp Renderer.hpp)
+
+target_link_libraries(RayTracing PUBLIC OpenMP::OpenMP_CXX)
