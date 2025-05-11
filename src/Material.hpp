@@ -11,7 +11,6 @@ using namespace Eigen;
 
 enum MaterialType {
     DIFFUSE,
-    EMIT,
     SMOOTH_CONDUCTOR,
     ROUGH_CONDUCTOR,
     ROUGH_DIELECTRIC,
