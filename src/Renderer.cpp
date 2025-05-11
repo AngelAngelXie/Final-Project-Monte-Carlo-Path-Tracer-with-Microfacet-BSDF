@@ -51,7 +51,7 @@ void Renderer::Render(const Scene &scene) {
                     Vector3f aperture_sample = eye_pos + Vector3f(dx, dy, 0);
     
                     // 3. New direction from aperture point to focal point
-                    dir = normalize(focal_point - aperture_sample);
+                    dir = (focal_point - aperture_sample).normalized();
                 } else {
                     float x =
                     (1 - 2 * (i + get_random_float()) / (float)camera.width) *

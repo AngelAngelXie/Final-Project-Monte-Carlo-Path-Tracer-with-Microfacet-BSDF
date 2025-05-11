@@ -7,7 +7,7 @@
 #include <algorithm>
 using namespace Eigen;
 
-enum MaterialType { DIFFUSE, SMOOTH_CONDUCTOR, ROUGH_CONDUCTOR, SOOTH_DIELECTRIC, ROUGH_DIELECTRIC };
+enum MaterialType { DIFFUSE, SMOOTH_CONDUCTOR, ROUGH_CONDUCTOR, SMOOTH_DIELECTRIC, ROUGH_DIELECTRIC };
 
 class Material {
   private:
@@ -88,7 +88,7 @@ class Material {
 
     // GGX Normal Distribution Function (NDF)
     inline float D_GGX(const Vector3f& h, const Vector3f& n, float alpha) {
-        float NoH = std::max(dotProduct(n, h), 0.0f);
+        float NoH = std::max(n.dot(h), 0.0f);
         float alpha2 = alpha * alpha;
         float denom = (NoH * NoH) * (alpha2 - 1.0f) + 1.0f;
         return alpha2 / (M_PI * denom * denom);
@@ -97,7 +97,7 @@ class Material {
     // Used to account for self-shadowing & masking in incoming & outgoing vectors
     inline float G_SmithGGX_Helper(const Vector3f& v, const Vector3f& n, float alpha) {
         // cos of angle between surface normal & direction vector
-        float NoV = std::max(dotProduct(n, v), 0.0f);
+        float NoV = std::max(n.dot(v), 0.0f);
         // tan of the angle between the direction vector & surface normal
         float tanTheta = std::sqrt(1.0f - NoV * NoV) / NoV;
 
@@ -122,7 +122,7 @@ class Material {
     // Fresnel term using Schlick's approximation
     // used for metals, not good for refraction
     inline Vector3f FresnelSchlick(float cosTheta, const Vector3f& F0) {
-        return F0 + (Vector3f(1.0f) - F0) * powf(1.0f - cosTheta, 5.0f);
+        return F0 + (Vector3f(1.0f, 1.0f, 1.0f) - F0) * powf(1.0f - cosTheta, 5.0f);
     }
 
     // Importance sample GGX NDF
@@ -130,13 +130,13 @@ class Material {
     // chooses reflection directions that are likely to contribute significant energy based on statistical surface roughness
     inline Vector3f ImportanceSampleGGX(const Vector2f& Xi, float alpha, const Vector3f& n) {
         // sample random microfacet normal h from GGX NDF in tangent space
-        float phi = 2.0f * M_PI * Xi.x;
-        float cosTheta = std::sqrt((1.0f - Xi.y) / (1.0f + (alpha * alpha - 1.0f) * Xi.y));
+        float phi = 2.0f * M_PI * Xi.x();
+        float cosTheta = std::sqrt((1.0f - Xi.y()) / (1.0f + (alpha * alpha - 1.0f) * Xi.y()));
         float sinTheta = std::sqrt(1.0f - cosTheta * cosTheta);
         Vector3f tan_space_h(sinTheta * std::cos(phi), sinTheta * std::sin(phi), cosTheta);
     
         // return the world space result  
-        return normalize(toWorld(tan_space_h, n));
+        return toWorld(tan_space_h, n).normalized();
     }
     // sample the microfacet normal h from GGX distribution  
     inline Vector3f sampleGGXMicrofacetNormal(const Vector3f& incoming_light, const Vector3f& n, float alpha) {
@@ -153,6 +153,8 @@ class Material {
     float ior;
     Vector3f Kd, Ks;
     float specularExponent;
+    float roughness;
+    Vector3f base_reflectance;
     // Texture tex;
 
     inline Material(MaterialType t = DIFFUSE, Vector3f e = Vector3f(0, 0, 0));
@@ -163,18 +165,20 @@ class Material {
     inline bool hasEmission();
 
     // sample a ray by Material properties
-    inline Vector3f sample(const Vector3f &wi, const Vector3f &N);
+    inline Vector3f sample(const Vector3f &incoming_light, const Vector3f &N);
     // given a ray, calculate the PdF of this ray
-    inline float pdf(const Vector3f &wi, const Vector3f &wo, const Vector3f &N);
+    inline float pdf(const Vector3f &incoming_light, const Vector3f &outgoing_view, const Vector3f &N, bool isReflect);
     // given a ray, calculate the contribution of this ray
-    inline Vector3f eval(const Vector3f &wi, const Vector3f &wo,
-                         const Vector3f &N);
+    inline Vector3f eval(const Vector3f &incoming_light, const Vector3f &outgoing_view, const Vector3f &N, bool isReflect);
 };
 
 Material::Material(MaterialType t, Vector3f e) {
     m_type = t;
     // m_color = c;
     m_emission = e;
+    ior=2;
+    roughness= 0.0f;
+    base_reflectance=Vector3f(0,0,0);
 }
 
 MaterialType Material::getType() { return m_type; }
@@ -189,7 +193,7 @@ bool Material::hasEmission() {
 
 Vector3f Material::getColorAt(double u, double v) { return Vector3f::Zero(); }
 
-Vector3f Material::sample(const Vector3f &wi, const Vector3f &N) {
+Vector3f Material::sample(const Vector3f &incoming_light, const Vector3f &N) {
     switch(m_type){
         case DIFFUSE:
         {    
@@ -200,6 +204,12 @@ Vector3f Material::sample(const Vector3f &wi, const Vector3f &N) {
             Vector3f localRay(r * std::cos(phi), r * std::sin(phi), z);
             return toWorld(localRay, N);
         }
+        case ROUGH_CONDUCTOR: return sampleGGXMicrofacetNormal(incoming_light, N, roughness);
+        case SMOOTH_CONDUCTOR: return N;
+        case ROUGH_DIELECTRIC: return sampleGGXMicrofacetNormal(incoming_light, N, roughness);
+        case SMOOTH_DIELECTRIC: return N;
+        default:
+            return Vector3f::Zero(); // or throw an error
     }
 }
 
@@ -218,7 +228,7 @@ float Material::pdf(const Vector3f &incoming_light, const Vector3f &outgoing_vie
         {
             Vector3f h_sum = incoming_light + outgoing_view;
             if (h_sum.norm() < EPSILON) return 0.0f;
-            Vector3f h = normalize(h_sum);
+            Vector3f h = (h_sum).normalized();
 
             float D = D_GGX(h, N, roughness);
             
@@ -240,7 +250,8 @@ float Material::pdf(const Vector3f &incoming_light, const Vector3f &outgoing_vie
         case SMOOTH_DIELECTRIC:
         {
             float eta = incoming_light.dot(N) > 0 ? 1.0f / ior : ior;
-            float kr = fresnel(incoming_light, N, eta);
+            float kr;
+            fresnel(incoming_light, N, eta, kr);
             return isReflect ? kr : (1.0f - kr);
         }
         default:
@@ -263,12 +274,12 @@ Vector3f Material::eval(const Vector3f &incoming_light, const Vector3f &outgoing
         case ROUGH_CONDUCTOR:
         {
             // skip reflection calculation if below surface
-            if (incoming_light.dot(N) <= 0 || outgoing_view.dot(N) <= 0) return Vector3f(0.0f);
+            if (incoming_light.dot(N) <= 0 || outgoing_view.dot(N) <= 0) return Vector3f::Zero();
             
             // half-vector h = microfacet orientation that reflect incoming light dir into outgoing view dir
             Vector3f h_sum = incoming_light + outgoing_view;
-            if (h_sum.norm() < EPSILON) return 0.0f;
-            Vector3f h = normalize(h_sum);
+            if (h_sum.norm() < EPSILON) return Vector3f::Zero();
+            Vector3f h = h_sum.normalized();
             
             float D = D_GGX(h, N, roughness);                                              // GGX Normal Distribution Function
             float G = G_SmithGGX(incoming_light, outgoing_view, N, roughness);             // Smith Geometry term for how much the surface is visible
@@ -284,27 +295,30 @@ Vector3f Material::eval(const Vector3f &incoming_light, const Vector3f &outgoing
         }
         case ROUGH_DIELECTRIC: 
         {
-            Vector3f h = normalize(incoming_light + outgoing_view);
+            Vector3f h = (incoming_light + outgoing_view).normalized();
             float D = D_GGX(h, N, roughness);
             float G = G_SmithGGX(incoming_light, outgoing_view, N, roughness);
-            float F = fresnel(incoming_light, N, ior);
+            float F;
+            fresnel(incoming_light, N, ior, F);
 
             float denom = 4.0f * std::abs(N.dot(incoming_light)) * std::abs(N.dot(outgoing_view)) + 1e-4f;
             if (isReflect) {
-                return Vector3f(F) * D * G / denom;
+                return Vector3f(F, F, F) * D * G / denom;
             } else {
                 float eta = incoming_light.dot(N) > 0 ? 1.0f / ior : ior;
                 float factor = (1.0f - F);
-                return Vector3f(factor) * D * G * eta * eta / denom;
+                return Vector3f(factor, factor, factor) * D * G * eta * eta / denom;
             }
         }
         case SMOOTH_DIELECTRIC:
         {
             float eta = incoming_light.dot(N) > 0 ? 1.0f / ior : ior;
-            float kr = fresnel(incoming_light, N, eta);
-            return isReflect ? Vector3f(kr) : Vector3f(1.0f - kr);
+            float kr;
+            fresnel(incoming_light, N, eta, kr);
+            return isReflect ? Vector3f(kr, kr, kr) : Vector3f(1.0f - kr, 1.0f - kr, 1.0f - kr);
         }
-        default: return Vector3f(0.0f);
+        default:
+            return Vector3f::Zero(); // or throw an error
     }
 }
 

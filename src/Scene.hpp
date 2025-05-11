@@ -45,6 +45,7 @@ class Scene {
                     const Vector3f &N, const Vector3f &shadowPointOrig,
                     const std::vector<Object *> &objects, uint32_t &index,
                     const Vector3f &dir, float specularExponent);
+    Vector3f calculate_direct_light(Vector3f p, Vector3f wo, Vector3f N) const;
 
     // creating the scene (adding objects and lights)
     std::vector<Object *> objects;
