@@ -30,27 +30,41 @@ int main(int argc, char **argv) {
 
 #ifdef DEBUG
     std::string root = std::filesystem::current_path().string();
-    MeshTriangle floor(root + "/models/cornellbox/floor.obj", white);
-    MeshTriangle shortbox(root + "/models/cornellbox/shortbox.obj", white);
-    MeshTriangle tallbox(root + "/models/cornellbox/tallbox.obj", white);
-    MeshTriangle left(root + "/models/cornellbox/left.obj", red);
-    MeshTriangle right(root + "/models/cornellbox/right.obj", green);
-    MeshTriangle light_(root + "/models/cornellbox/light.obj", light);
+    // MeshTriangle floor(root + "/models/cornellbox/floor.obj", white);
+    // MeshTriangle shortbox(root + "/models/cornellbox/shortbox.obj", white);
+    // MeshTriangle tallbox(root + "/models/cornellbox/tallbox.obj", white);
+    // MeshTriangle left(root + "/models/cornellbox/left.obj", red);
+    // MeshTriangle right(root + "/models/cornellbox/right.obj", green);
+    // MeshTriangle light_(root + "/models/cornellbox/light.obj", light);
+    MeshTriangle floor(root + "/models/floor.obj", white);
+    MeshTriangle left(root + "/models/left.obj", red);
+    MeshTriangle right(root + "/models/right.obj", green);
+    MeshTriangle light_(root + "/models/light.obj", light);
+    MeshTriangle soldier_1(root + "/model/Soldier.obj", red);
+    MeshTriangle king(root + "/model/King.obj", red);
 #else
-    MeshTriangle floor("../models/cornellbox/floor.obj", white);
-    MeshTriangle shortbox("../models/cornellbox/shortbox.obj", white);
-    MeshTriangle tallbox("../models/cornellbox/tallbox.obj", white);
-    MeshTriangle left("../models/cornellbox/left.obj", red);
-    MeshTriangle right("../models/cornellbox/right.obj", green);
-    MeshTriangle light_("../models/cornellbox/light.obj", light);
+    //MeshTriangle floor("../models/cornellbox/floor.obj", white);
+    // MeshTriangle shortbox("../models/cornellbox/shortbox.obj", white);
+    //MeshTriangle tallbox("../models/cornellbox/tallbox.obj", white);
+    //MeshTriangle left("../models/cornellbox/left.obj", red);
+    //MeshTriangle right("../models/cornellbox/right.obj", green);
+    //MeshTriangle light_("../models/cornellbox/light.obj", light);
+    MeshTriangle floor(root + "/models/floor.obj", Vector3f(0), white);
+    MeshTriangle left(root + "/models/left.obj", Vector3f(0), red);
+    MeshTriangle right(root + "/models/right.obj", Vector3f(0), green);
+    MeshTriangle light_(root + "/models/light.obj", Vector3f(0,-5,0), light);
+    MeshTriangle soldier_1(root + "/models/Soldier.obj", red);
+    MeshTriangle king(root + "/models/King.obj", red);
 #endif
 
     scene.Add(&floor);
-    scene.Add(&shortbox);
-    scene.Add(&tallbox);
+    //scene.Add(&shortbox);
+    //scene.Add(&tallbox);
     scene.Add(&left);
     scene.Add(&right);
     scene.Add(&light_);
+    scene.Add(&soldier_1);
+    scene.Add(&king);
 
     scene.buildBVH();
 
