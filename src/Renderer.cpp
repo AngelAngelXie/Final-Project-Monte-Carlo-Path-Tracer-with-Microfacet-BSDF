@@ -37,14 +37,31 @@ void Renderer::Render(const Scene &scene) {
             // generate primary ray direction
             int m = i + j * camera.width;
             for (int k = 0; k < spp; k++) {
-                float x =
+                Vector3f dir;
+                
+                if (camera.useDOF) {
+                    // 1. compute focal point for current screen pixel
+                    Vector3f focal_point = eye_pos + dir * camera.focal_distance;
+                    
+                    // 2. Sample point on aperture (disk in x-y plane)
+                    float r = camera.aperture_radius * std::sqrt(get_random_float());
+                    float theta = 2 * M_PI * get_random_float();
+                    float dx = r * std::cos(theta);
+                    float dy = r * std::sin(theta);
+                    Vector3f aperture_sample = eye_pos + Vector3f(dx, dy, 0);
+    
+                    // 3. New direction from aperture point to focal point
+                    dir = normalize(focal_point - aperture_sample);
+                } else {
+                    float x =
                     (1 - 2 * (i + get_random_float()) / (float)camera.width) *
                     imageAspectRatio * scale;
-                float y =
-                    (1 - 2 * (j + get_random_float()) / (float)camera.height) *
-                    scale;
+                    float y =
+                        (1 - 2 * (j + get_random_float()) / (float)camera.height) *
+                        scale;
+                    dir = Vector3f(x, y, 1).normalized();
+                }
 
-                Vector3f dir = Vector3f(x, y, 1).normalized();
                 dir = orientation * dir;
                 auto color = scene.castRay(Ray(eye_pos, dir), 0);
                 framebuffer[m] += color / spp;

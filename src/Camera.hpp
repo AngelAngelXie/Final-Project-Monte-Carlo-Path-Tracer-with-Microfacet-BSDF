@@ -9,6 +9,9 @@ class Camera {
   public:
     int width = 1280, height = 960;
     float fov = 40;
+    bool useDOF = false;
+    float focal_distance = 100;
+    float aperture_radius = 5.0f;
     Camera(int w = 1280, int h = 960) : width(w), height(h) {}
     Vector3f position = {0, 0, 0};
     void lookAt(const Vector3f &target, const Vector3f &up = {0, 1, 0}) {
