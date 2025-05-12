@@ -1,0 +1,22 @@
+{
+  _: "Example configuration file",
+  "camera": {
+    "width": 384,
+    "height": 384,
+    "fov": 45,
+    "position": [278, 273, -800],
+    "target": [278, 273, 0],
+    "up": [0, 1, 0],
+    "useFov": false,
+    "focusDistance": 100,
+    "apertureRadius": 5
+  },
+  "renderer": {
+    "spp": 8,
+    "parrallelism": 256
+  },
+  "scene": {
+    "RussianRouletteRate": 0.7,
+    "backgroundColor": [0.235294, 0.67451, 0.843137]
+  }
+}

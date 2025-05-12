@@ -208,7 +208,7 @@ Material::Material(MaterialType t, Vector3f e) {
     ior = 2;
     roughness = 1.f;
     if (t == ROUGH_DIELECTRIC) {
-        roughness = 0.01f;
+        roughness = 0.2f;
     }
     base_reflectance = Vector3f(0, 0, 0);
 }

@@ -16,13 +16,13 @@
 #include <vector>
 
 class Scene {
+    float rrRate = 0.7;
+    float invRr = 1 / .7;
+
   public:
     // setting up options
     Camera camera;
     Vector3f backgroundColor = Vector3f(0.235294, 0.67451, 0.843137);
-    int maxDepth = 1;
-    float rrRate = 0.8;
-    float invRr = 1 / .8;
 
     Scene(Camera camera) : camera(camera) {}
 
@@ -31,6 +31,10 @@ class Scene {
         if (object->hasEmit()) {
             lightsObjects.push_back(object);
         }
+    }
+    void setRrRate(float rr) {
+        rrRate = rr;
+        invRr = 1 / rr;
     }
     void Add(std::unique_ptr<Light> light) {
         lights.push_back(std::move(light));
