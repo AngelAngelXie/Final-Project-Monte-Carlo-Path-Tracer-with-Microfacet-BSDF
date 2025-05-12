@@ -128,8 +128,8 @@ class Material {
     MaterialType m_type;
     Vector3f m_color;
     Vector3f m_emission;
-    float ior;       // index of refraction
-    Vector3f Kd, Ks; // coefficient of diffuse and specular
+    float iorA, iorB; // index of refraction
+    Vector3f Kd, Ks;  // coefficient of diffuse and specular
     float specularExponent;
     bool textured;
     bool isDirac; //  Is pdf a dirac delta function
@@ -143,6 +143,10 @@ class Material {
     inline Vector3f getEmission();
     inline bool hasEmission();
 
+    //  2-terms Cauchy's equation
+    float getIor(float wavelen) const {
+        return iorA + iorB * wavelen * wavelen;
+    }
     // sample a ray by Material properties
     inline Vector3f sample(const Vector3f &incoming_light, const Vector3f &N);
     // given a ray, calculate the PdF of this ray
@@ -151,17 +155,17 @@ class Material {
     // given a ray direction and normal, calculate the contribution of this ray
     inline Vector3f eval(const Vector3f &incoming_light,
                          const Vector3f &outgoing_view, const Vector3f &N,
-                         bool isReflect = false);
+                         float wavelen, bool isReflect = false);
     Vector3f reflect(const Vector3f &I, const Vector3f &N) const {
         return 2 * N.dot(I) * N - I;
     }
-    float fresnel(const Vector3f &I, const Vector3f &N) const {
+    float fresnel(const Vector3f &I, const Vector3f &N, float wavelen) const {
         if (this->m_type == SMOOTH_CONDUCTOR ||
             this->m_type == ROUGH_CONDUCTOR) {
             return 1;
         }
         float cosi = clamp(-1, 1, I.dot(N));
-        float etai = 1, etat = ior;
+        float etai = 1, etat = getIor(wavelen);
         if (cosi > 0) {
             std::swap(etai, etat);
         }
@@ -183,9 +187,10 @@ class Material {
         // As a consequence of the conservation of energy, transmittance is
         // given by: kt = 1 - kr;
     }
-    Vector3f refract(const Vector3f &I, const Vector3f &N) const {
+    Vector3f refract(const Vector3f &I, const Vector3f &N,
+                     float wavelen) const {
         float cosi = clamp(-1, 1, I.dot(N));
-        float etai = 1, etat = ior;
+        float etai = 1, etat = getIor(wavelen);
         Vector3f n = N;
         if (cosi < 0) {
             cosi = -cosi;
@@ -205,7 +210,8 @@ Material::Material(MaterialType t, Vector3f e) {
     m_emission = e;
     isDirac = (t == SMOOTH_CONDUCTOR ||
                t == SMOOTH_DIELECTRIC); //  dirac delta pdf for smooth
-    ior = 2;
+    iorA = 1.67;
+    iorB = 0.0074f;
     roughness = 1.f;
     if (t == ROUGH_DIELECTRIC) {
         roughness = 0.2f;
@@ -277,7 +283,7 @@ float Material::pdf(const Vector3f &microfacet_normal,
 
 Vector3f Material::eval(const Vector3f &incoming_light,
                         const Vector3f &outgoing_view, const Vector3f &N,
-                        bool isReflect) {
+                        float wavelen, bool isReflect) {
     switch (m_type) {
     case DIFFUSE: {
         float cosalpha = N.dot(incoming_light);
@@ -325,7 +331,7 @@ Vector3f Material::eval(const Vector3f &incoming_light,
             }
             Vector3f h = (incoming_light + outgoing_view).normalized();
             h = incoming_light.dot(N) > 0 ? h : -h;
-            float F = fresnel(-incoming_light, h);
+            float F = fresnel(-incoming_light, h, wavelen);
             float D = D_GGX(h, N, roughness);
             float G = G_SmithGGX(incoming_light, outgoing_view, h, roughness);
 
@@ -337,10 +343,11 @@ Vector3f Material::eval(const Vector3f &incoming_light,
             if (incoming_light.dot(N) * outgoing_view.dot(N) >= 0) {
                 return Vector3f::Zero();
             }
+            float ior = getIor(wavelen);
             float eta = (incoming_light.dot(N) > 0) ? ior : 1. / ior;
             Vector3f h = (-incoming_light - outgoing_view * eta).normalized();
-            float F =
-                fresnel(-incoming_light, (incoming_light.dot(N) > 0 ? h : -h));
+            float F = fresnel(-incoming_light,
+                              (incoming_light.dot(N) > 0 ? h : -h), wavelen);
             float D = D_GGX(h, N, roughness);
             float G = G_SmithGGX(incoming_light, outgoing_view, h, roughness);
             // std::cout << F << " " << D << " " << G << std::endl;
@@ -350,7 +357,7 @@ Vector3f Material::eval(const Vector3f &incoming_light,
         }
     }
     case SMOOTH_DIELECTRIC: {
-        float kr = fresnel(-incoming_light, N);
+        float kr = fresnel(-incoming_light, N, wavelen);
         return isReflect ? Vector3f::Constant(kr)
                          : Vector3f::Constant(1.0f - kr);
     }

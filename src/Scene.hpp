@@ -12,6 +12,7 @@
 #include "Material.hpp"
 #include "Object.hpp"
 #include "Ray.hpp"
+#include "WaveLen.hpp"
 #include <Eigen/Dense>
 #include <vector>
 
@@ -33,8 +34,8 @@ class Scene {
         }
     }
     void setRrRate(float rr) {
-        rrRate = rr;
-        invRr = 1 / rr;
+        rrRate = std::min(rr, 0.99f);
+        invRr = 1 / rrRate;
     }
     void Add(std::unique_ptr<Light> light) {
         lights.push_back(std::move(light));
@@ -47,7 +48,7 @@ class Scene {
     Intersection intersect(const Ray &ray) const;
     BVHAccel *bvh;
     void buildBVH();
-    Vector3f castRay(const Ray &ray, int depth) const;
+    Vector3f castRay(const Ray &ray, int depth, WaveLen wavelen) const;
     void sampleLight(Intersection &pos, float &pdf) const;
     bool trace(const Ray &ray, const std::vector<Object *> &objects,
                float &tNear, uint32_t &index, Object **hitObject);

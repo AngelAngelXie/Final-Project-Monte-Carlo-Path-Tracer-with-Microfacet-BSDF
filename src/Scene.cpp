@@ -5,6 +5,7 @@
 #include "Scene.hpp"
 #include "Eigen/src/Core/Matrix.h"
 #include "Material.hpp"
+#include "WaveLen.hpp"
 #include <Eigen/Dense>
 
 void Scene::buildBVH() {
@@ -75,7 +76,7 @@ Vector3f Scene::directLighting(const Vector3f &wo, const Vector3f &p,
 }
 
 // Implementation of Path Tracing
-Vector3f Scene::castRay(const Ray &ray, int depth) const {
+Vector3f Scene::castRay(const Ray &ray, int depth, WaveLen wavelen) const {
     auto inter = intersect(ray);
     if (!inter.happened) {
         return Vector3f::Zero();
@@ -87,9 +88,11 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
     auto n = inter.normal;
     auto m = inter.m;
     auto wo = -ray.direction;
+    float fwl = wavelen.getWaveLen();
+    Vector3f wc = wavelen.getColor();
 
     auto mfn = m->sample(wo, n); //  microfacet normal
-    float kr = m->fresnel(ray.direction, mfn);
+    float kr = m->fresnel(ray.direction, mfn, fwl);
 
     Vector3f l_dir = Vector3f::Zero();
     Vector3f l_ind = Vector3f::Zero();
@@ -103,18 +106,18 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
             l_dir = directLighting(wo, p, n, m);
         }
         if (rr >= this->rrRate) {
-            return l_dir;
+            return l_dir.cwiseProduct(wc);
         }
         auto wi = m->reflect(wo, mfn);
         Ray r(p, wi);
         inter = intersect(r);
         if (inter.happened && !inter.obj->hasEmit()) {
             if (m->isDirac) {
-                l_ind = castRay(r, depth + 1)
+                l_ind = castRay(r, depth + 1, wavelen)
                             .cwiseProduct(m->eval(wi, wo, n, true)) *
                         invRr;
             } else {
-                l_ind = castRay(r, depth + 1)
+                l_ind = castRay(r, depth + 1, wavelen)
                             .cwiseProduct(m->eval(wi, wo, n, true)) *
                         std::abs(wi.dot(n)) / m->pdf(mfn, wo, n) * invRr;
             }
@@ -127,18 +130,18 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
             p -= n * EPSILON;
         }
         if (rr >= this->rrRate) {
-            return l_dir;
+            return l_dir.cwiseProduct(wc);
         }
-        auto wi = m->refract(ray.direction, mfn);
+        auto wi = m->refract(ray.direction, mfn, fwl);
         Ray r(p, wi);
         inter = intersect(r);
         if (inter.happened && !inter.obj->hasEmit()) {
             if (m->isDirac) {
-                l_ind = castRay(r, depth + 1)
+                l_ind = castRay(r, depth + 1, wavelen)
                             .cwiseProduct(m->eval(wi, wo, n, false)) *
                         invRr;
             } else {
-                l_ind = castRay(r, depth + 1)
+                l_ind = castRay(r, depth + 1, wavelen)
                             .cwiseProduct(m->eval(wi, wo, n, false)) *
                         std::abs(wi.dot(n)) / m->pdf(mfn, wo, n) * invRr;
             }
@@ -152,5 +155,5 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const {
         clamp(0, threshold_ind, l_ind.y()),
         clamp(0, threshold_ind, l_ind.z()),
     };
-    return l_dir + l_ind;
+    return (l_dir + l_ind).cwiseProduct(wc);
 }

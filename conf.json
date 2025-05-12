@@ -12,8 +12,8 @@
     "apertureRadius": 5
   },
   "renderer": {
-    "spp": 8,
-    "parrallelism": 256
+    "spp": 256,
+    "parrallelism": 8
   },
   "scene": {
     "RussianRouletteRate": 0.7,

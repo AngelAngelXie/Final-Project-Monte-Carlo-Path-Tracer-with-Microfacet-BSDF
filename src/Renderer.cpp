@@ -65,8 +65,12 @@ void Renderer::Render(const Scene &scene) {
                 }
 
                 dir = orientation * dir;
-                auto color = scene.castRay(Ray(eye_pos, dir), 0);
-                framebuffer[m] += color / spp;
+                auto colorR = scene.castRay(Ray(eye_pos, dir), 0, WaveLen(RED));
+                auto colorG =
+                    scene.castRay(Ray(eye_pos, dir), 0, WaveLen(GREEN));
+                auto colorB =
+                    scene.castRay(Ray(eye_pos, dir), 0, WaveLen(BLUE));
+                framebuffer[m] += (colorR + colorG + colorB) / spp;
             }
         }
         prog += 1.f / camera.height;
