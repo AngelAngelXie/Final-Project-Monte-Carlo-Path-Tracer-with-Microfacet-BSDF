@@ -31,50 +31,51 @@ void Renderer::Render(const Scene &scene) {
     std::cout << "SPP: " << spp << "\n";
     float prog = 0.;
     init_rngs(this->parellelism);
-#pragma omp parallel for num_threads(this->parellelism)
-    for (uint32_t j = 0; j < camera.height; ++j) {
-        for (uint32_t i = 0; i < camera.width; ++i) {
-            // generate primary ray direction
-            int m = i + j * camera.width;
-            for (int k = 0; k < spp; k++) {
-                Vector3f dir;
+#pragma omp parallel for num_threads(this->parellelism) schedule(dynamic, 8)
+    for (int m = 0; m < camera.height * camera.width; ++m) {
+        // generate primary ray direction
+        int i = m % camera.width, j = m / camera.width;
+        for (int k = 0; k < spp; k++) {
+            Vector3f dir;
 
-                if (camera.useDOF) {
-                    // 1. compute focal point for current screen pixel
-                    Vector3f focal_point =
-                        eye_pos + dir * camera.focal_distance;
+            if (camera.useDOF) {
+                // 1. compute focal point for current screen pixel
+                float x = (1 - 2 * (i + .5) / (float)camera.width) *
+                          imageAspectRatio * scale;
+                float y = (1 - 2 * (j + .5) / (float)camera.height) * scale;
+                Vector3f focal_point =
+                    eye_pos + Vector3f(x, y, 1) * camera.focal_distance;
 
-                    // 2. Sample point on aperture (disk in x-y plane)
-                    float r =
-                        camera.aperture_radius * std::sqrt(get_random_float());
-                    float theta = 2 * M_PI * get_random_float();
-                    float dx = r * std::cos(theta);
-                    float dy = r * std::sin(theta);
-                    Vector3f aperture_sample = eye_pos + Vector3f(dx, dy, 0);
+                // 2. Sample point on aperture (disk in x-y plane)
+                float r =
+                    camera.aperture_radius * std::sqrt(get_random_float());
+                float theta = 2 * M_PI * get_random_float();
+                float dx = r * std::cos(theta);
+                float dy = r * std::sin(theta);
+                Vector3f aperture_sample = eye_pos + Vector3f(dx, dy, 0);
 
-                    // 3. New direction from aperture point to focal point
-                    dir = (focal_point - aperture_sample).normalized();
-                } else {
-                    float x = (1 - 2 * (i + get_random_float()) /
-                                       (float)camera.width) *
-                              imageAspectRatio * scale;
-                    float y = (1 - 2 * (j + get_random_float()) /
-                                       (float)camera.height) *
-                              scale;
-                    dir = Vector3f(x, y, 1).normalized();
-                }
-
-                dir = orientation * dir;
-                auto colorR = scene.castRay(Ray(eye_pos, dir), 0, WaveLen(RED));
-                auto colorG =
-                    scene.castRay(Ray(eye_pos, dir), 0, WaveLen(GREEN));
-                auto colorB =
-                    scene.castRay(Ray(eye_pos, dir), 0, WaveLen(BLUE));
-                framebuffer[m] += (colorR + colorG + colorB) / spp;
+                // 3. New direction from aperture point to focal point
+                dir = (focal_point - aperture_sample).normalized();
+            } else {
+                float x =
+                    (1 - 2 * (i + get_random_float()) / (float)camera.width) *
+                    imageAspectRatio * scale;
+                float y =
+                    (1 - 2 * (j + get_random_float()) / (float)camera.height) *
+                    scale;
+                dir = Vector3f(x, y, 1).normalized();
             }
+
+            dir = orientation * dir;
+            float colorR = scene.castRay(Ray(eye_pos, dir), 0, RED);
+            float colorG = scene.castRay(Ray(eye_pos, dir), 0, GREEN);
+            float colorB = scene.castRay(Ray(eye_pos, dir), 0, BLUE);
+            framebuffer[m] += Vector3f(colorR, colorG, colorB) / spp;
         }
-        prog += 1.f / camera.height;
-        UpdateProgress(prog);
+        prog += 1.f / camera.height / camera.width;
+        if (i == 0) {
+            UpdateProgress(prog);
+        }
     }
     UpdateProgress(1.f);
 

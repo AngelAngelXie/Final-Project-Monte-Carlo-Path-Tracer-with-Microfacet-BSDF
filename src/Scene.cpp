@@ -50,10 +50,10 @@ bool Scene::trace(const Ray &ray, const std::vector<Object *> &objects,
     return (*hitObject != nullptr);
 }
 
-Vector3f Scene::directLighting(const Vector3f &wo, const Vector3f &p,
-                               const Vector3f &n, Material *m,
-                               bool isReflect) const {
-    Vector3f l_dir = Vector3f::Zero();
+float Scene::directLighting(const Vector3f &wo, const Vector3f &p,
+                            const Vector3f &n, Material *m,
+                            const WaveLenType &wavelen, bool isReflect) const {
+    float l_dir = 0;
     float pdf;
     int n_dir_sample = 4;
     Intersection inter;
@@ -61,13 +61,13 @@ Vector3f Scene::directLighting(const Vector3f &wo, const Vector3f &p,
         sampleLight(inter, pdf);
         auto p_light = inter.coords;
         auto n_light = inter.normal;
-        auto emit = inter.emit;
+        auto emit = extract(wavelen, inter.emit);
         auto ws = (p_light - p).normalized();
         auto dist = (p_light - p).norm();
         Ray rlight(p, ws);
         inter = intersect(rlight);
         if (inter.happened && std::abs(inter.distance - dist) < EPSILON) {
-            l_dir += emit.cwiseProduct(m->eval(ws, wo, n, isReflect)) *
+            l_dir += emit * m->eval(ws, wo, n, wavelen, isReflect) *
                      (ws.dot(n)) * ((-ws).dot(n_light)) / (dist * dist) / pdf /
                      n_dir_sample;
         }
@@ -76,26 +76,26 @@ Vector3f Scene::directLighting(const Vector3f &wo, const Vector3f &p,
 }
 
 // Implementation of Path Tracing
-Vector3f Scene::castRay(const Ray &ray, int depth, WaveLen wavelen) const {
+float Scene::castRay(const Ray &ray, int depth,
+                     const WaveLenType &wavelen) const {
     auto inter = intersect(ray);
     if (!inter.happened) {
-        return Vector3f::Zero();
-    }
-    if (depth == 0 && inter.obj->hasEmit()) {
-        return inter.m->getEmission();
+        return extract(wavelen, this->backgroundColor);
     }
     auto p = inter.coords;
     auto n = inter.normal;
     auto m = inter.m;
-    auto wo = -ray.direction;
-    float fwl = wavelen.getWaveLen();
-    Vector3f wc = wavelen.getColor();
+    Vector3f wo = -ray.direction;
+    float fwl = getWaveLen(wavelen);
+
+    if (depth == 0 && inter.obj->hasEmit()) {
+        return extract(wavelen, inter.emit);
+    }
 
     auto mfn = m->sample(wo, n); //  microfacet normal
     float kr = m->fresnel(ray.direction, mfn, fwl);
 
-    Vector3f l_dir = Vector3f::Zero();
-    Vector3f l_ind = Vector3f::Zero();
+    float l_dir = 0, l_ind = 0;
     float rr = get_random_float();
     float rd_flect = get_random_float();
     if (rd_flect < kr) {
@@ -103,57 +103,51 @@ Vector3f Scene::castRay(const Ray &ray, int depth, WaveLen wavelen) const {
             p -= n * EPSILON;
         } else { //  only calc direct lighting when ray is outside
             p += n * EPSILON;
-            l_dir = directLighting(wo, p, n, m);
+            l_dir = directLighting(wo, p, n, m, wavelen, true);
         }
         if (rr >= this->rrRate) {
-            return l_dir.cwiseProduct(wc);
+            return l_dir;
         }
         auto wi = m->reflect(wo, mfn);
         Ray r(p, wi);
         inter = intersect(r);
         if (inter.happened && !inter.obj->hasEmit()) {
             if (m->isDirac) {
-                l_ind = castRay(r, depth + 1, wavelen)
-                            .cwiseProduct(m->eval(wi, wo, n, true)) *
-                        invRr;
+                l_ind = castRay(r, depth + 1, wavelen) *
+                        m->eval(wi, wo, n, wavelen, true) * invRr;
             } else {
-                l_ind = castRay(r, depth + 1, wavelen)
-                            .cwiseProduct(m->eval(wi, wo, n, true)) *
+                l_ind = castRay(r, depth + 1, wavelen) *
+                        (m->eval(wi, wo, n, wavelen, true)) *
                         std::abs(wi.dot(n)) / m->pdf(mfn, wo, n) * invRr;
             }
         }
     } else {
         if (wo.dot(n) < 0) { //  in-out refraction
             p += n * EPSILON;
-            l_dir = directLighting(wo, p, n, m, false);
+            l_dir = directLighting(wo, p, n, m, wavelen, false);
         } else {
             p -= n * EPSILON;
         }
         if (rr >= this->rrRate) {
-            return l_dir.cwiseProduct(wc);
+            return l_dir;
         }
         auto wi = m->refract(ray.direction, mfn, fwl);
         Ray r(p, wi);
         inter = intersect(r);
         if (inter.happened && !inter.obj->hasEmit()) {
             if (m->isDirac) {
-                l_ind = castRay(r, depth + 1, wavelen)
-                            .cwiseProduct(m->eval(wi, wo, n, false)) *
-                        invRr;
+                l_ind = castRay(r, depth + 1, wavelen) *
+                        m->eval(wi, wo, n, wavelen, false) * invRr;
             } else {
-                l_ind = castRay(r, depth + 1, wavelen)
-                            .cwiseProduct(m->eval(wi, wo, n, false)) *
+                l_ind = castRay(r, depth + 1, wavelen) *
+                        m->eval(wi, wo, n, wavelen, false) *
                         std::abs(wi.dot(n)) / m->pdf(mfn, wo, n) * invRr;
             }
         }
     }
 
     //  use clamp to avoid fireflies
-    float threshold_ind = 5;
-    l_ind = {
-        clamp(0, threshold_ind, l_ind.x()),
-        clamp(0, threshold_ind, l_ind.y()),
-        clamp(0, threshold_ind, l_ind.z()),
-    };
-    return (l_dir + l_ind).cwiseProduct(wc);
+    float threshold_ind = 7;
+    l_ind = clamp(0, threshold_ind, l_ind);
+    return l_dir + l_ind;
 }

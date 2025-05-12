@@ -133,6 +133,8 @@ int main(int argc, char **argv) {
                   << std::endl;
     }
 
+    camera.width = w;
+    camera.height = h;
     camera.position = camPos;
     camera.lookAt(camTarget, camUp);
     // Change the definition here to change resolution

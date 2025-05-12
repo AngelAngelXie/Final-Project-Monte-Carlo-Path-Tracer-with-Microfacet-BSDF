@@ -47,8 +47,7 @@ inline void init_rngs(int thrd_num) {
 }
 
 inline float get_random_float() {
-    std::uniform_real_distribution<float> dist(
-        0.f, 1.f); // distribution in range [1, 6]
+    std::uniform_real_distribution<float> dist(0.f, 1.f);
 
     return dist(RNGS[omp_get_thread_num()]);
 }

@@ -1,5 +1,5 @@
 {
-  _: "Example configuration file",
+  "_": "Example configuration file",
   "camera": {
     "width": 384,
     "height": 384,

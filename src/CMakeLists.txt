@@ -13,4 +13,7 @@ add_executable(RayTracing main.cpp Camera.hpp Object.hpp global.hpp Triangle.hpp
         Scene.hpp Light.hpp json.hpp AreaLight.hpp BVH.cpp BVH.hpp Bounds3.hpp Ray.hpp Sphere.hpp Material.hpp Intersection.hpp
         Renderer.cpp Renderer.hpp WaveLen.hpp)
 
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../conf.json
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 target_link_libraries(RayTracing PUBLIC OpenMP::OpenMP_CXX)

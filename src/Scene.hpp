@@ -48,7 +48,7 @@ class Scene {
     Intersection intersect(const Ray &ray) const;
     BVHAccel *bvh;
     void buildBVH();
-    Vector3f castRay(const Ray &ray, int depth, WaveLen wavelen) const;
+    float castRay(const Ray &ray, int depth, const WaveLenType &wavelen) const;
     void sampleLight(Intersection &pos, float &pdf) const;
     bool trace(const Ray &ray, const std::vector<Object *> &objects,
                float &tNear, uint32_t &index, Object **hitObject);
@@ -59,9 +59,10 @@ class Scene {
                     const Vector3f &dir, float specularExponent);
     Vector3f calculate_direct_light(Vector3f p, Vector3f wo, Vector3f N) const;
 
-    Vector3f directLighting(const Vector3f &wo, const Vector3f &p,
-                            const Vector3f &n, Material *m,
-                            bool isReflect = true) const;
+    float directLighting(const Vector3f &wo, const Vector3f &p,
+                         const Vector3f &n, Material *m,
+                         const WaveLenType &wavelen,
+                         bool isReflect = true) const;
 
     // creating the scene (adding objects and lights)
     std::vector<Object *> objects;

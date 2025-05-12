@@ -5,6 +5,7 @@
 #ifndef RAYTRACING_MATERIAL_H
 #define RAYTRACING_MATERIAL_H
 
+#include "WaveLen.hpp"
 #include "global.hpp"
 #include <Eigen/Dense>
 using namespace Eigen;
@@ -69,8 +70,12 @@ class Material {
     }
     // Fresnel term using Schlick's approximation
     // used for metals, not good for refraction
-    inline Vector3f FresnelSchlick(float cosTheta, const Vector3f &F0) {
-        return F0 + (Vector3f::Ones() - F0) * powf(1.0f - cosTheta, 5.0f);
+    inline float FresnelSchlick(float cosTheta,
+                                const WaveLenType &wavelen) const {
+        float f = ::extract(wavelen, this->base_reflectance);
+        float invc = 1.f - cosTheta;
+        float c2 = invc * invc;
+        return f + (1.f - f) * c2 * c2 * invc;
     }
     // Transform vector to world coordinates from tangent space
     // When sampling from GGX distribution, work is done in tangent space.
@@ -147,15 +152,16 @@ class Material {
     float getIor(float wavelen) const {
         return iorA + iorB * wavelen * wavelen;
     }
+    float getIor(WaveLenType type) const { return getIor(getWaveLen(type)); }
     // sample a ray by Material properties
     inline Vector3f sample(const Vector3f &incoming_light, const Vector3f &N);
     // given a ray, calculate the PdF of this ray
     inline float pdf(const Vector3f &incoming_light,
                      const Vector3f &outgoing_view, const Vector3f &N);
     // given a ray direction and normal, calculate the contribution of this ray
-    inline Vector3f eval(const Vector3f &incoming_light,
-                         const Vector3f &outgoing_view, const Vector3f &N,
-                         float wavelen, bool isReflect = false);
+    inline float eval(const Vector3f &incoming_light,
+                      const Vector3f &outgoing_view, const Vector3f &N,
+                      const WaveLenType &wavelen, bool isReflect = false);
     Vector3f reflect(const Vector3f &I, const Vector3f &N) const {
         return 2 * N.dot(I) * N - I;
     }
@@ -281,29 +287,29 @@ float Material::pdf(const Vector3f &microfacet_normal,
     }
 }
 
-Vector3f Material::eval(const Vector3f &incoming_light,
-                        const Vector3f &outgoing_view, const Vector3f &N,
-                        float wavelen, bool isReflect) {
+float Material::eval(const Vector3f &incoming_light,
+                     const Vector3f &outgoing_view, const Vector3f &N,
+                     const WaveLenType &wavelen, bool isReflect) {
     switch (m_type) {
     case DIFFUSE: {
         float cosalpha = N.dot(incoming_light);
         if (cosalpha > 0.0f) {
             Vector3f diffuse = Kd / M_PI;
-            return diffuse;
+            return ::extract(wavelen, diffuse) * cosalpha;
         } else
-            return Vector3f::Zero();
+            return 0.;
     }
     case ROUGH_CONDUCTOR: {
         // skip reflection calculation if below surface
         if (incoming_light.dot(N) <= 0 || outgoing_view.dot(N) <= 0) {
-            return Vector3f::Zero();
+            return 0.;
         }
 
         // half-vector h = microfacet orientation that reflect incoming
         // light dir into outgoing view dir
         Vector3f h_sum = incoming_light + outgoing_view;
         if (h_sum.norm() < EPSILON) {
-            return Vector3f::Zero();
+            return 0.;
         }
         Vector3f h = h_sum.normalized();
 
@@ -311,9 +317,9 @@ Vector3f Material::eval(const Vector3f &incoming_light,
         float G = G_SmithGGX(incoming_light, outgoing_view, h,
                              roughness); // Smith Geometry term for how
                                          // much the surface is visible
-        Vector3f F = FresnelSchlick(outgoing_view.dot(h),
-                                    base_reflectance); // Fresnel term for view
-                                                       // dependent reflectivity
+        float F = FresnelSchlick(outgoing_view.dot(h),
+                                 wavelen); // Fresnel term for view
+                                           // dependent reflectivity
         float denom =
             4.0f * N.dot(incoming_light) * N.dot(outgoing_view) + EPSILON;
 
@@ -322,12 +328,12 @@ Vector3f Material::eval(const Vector3f &incoming_light,
     case SMOOTH_CONDUCTOR: {
         // Perfect mirror: Only evaluate Fresnel. Smooth surface will
         // not have microfacets, thus no self-shadows neither
-        return FresnelSchlick(N.dot(outgoing_view), base_reflectance);
+        return FresnelSchlick(N.dot(outgoing_view), wavelen);
     }
     case ROUGH_DIELECTRIC: {
         if (isReflect) {
             if (incoming_light.dot(N) * outgoing_view.dot(N) <= 0) {
-                return Vector3f::Zero();
+                return 0.;
             }
             Vector3f h = (incoming_light + outgoing_view).normalized();
             h = incoming_light.dot(N) > 0 ? h : -h;
@@ -338,10 +344,10 @@ Vector3f Material::eval(const Vector3f &incoming_light,
             float denom = 4.0f * std::abs(N.dot(incoming_light)) *
                               std::abs(N.dot(outgoing_view)) +
                           EPSILON;
-            return Vector3f::Constant(F) * D * G / denom;
+            return F * D * G / denom;
         } else {
             if (incoming_light.dot(N) * outgoing_view.dot(N) >= 0) {
-                return Vector3f::Zero();
+                return 0.;
             }
             float ior = getIor(wavelen);
             float eta = (incoming_light.dot(N) > 0) ? ior : 1. / ior;
@@ -350,19 +356,17 @@ Vector3f Material::eval(const Vector3f &incoming_light,
                               (incoming_light.dot(N) > 0 ? h : -h), wavelen);
             float D = D_GGX(h, N, roughness);
             float G = G_SmithGGX(incoming_light, outgoing_view, h, roughness);
-            // std::cout << F << " " << D << " " << G << std::endl;
             float d1 = incoming_light.dot(h), d2 = outgoing_view.dot(h);
             float denom = d2 * d2 * eta * eta + 2 * d1 * d2 * eta + d1 * d1;
-            return Vector3f::Constant(1.0f - F) * D * G * eta * eta / denom;
+            return (1.0f - F) * D * G * eta * eta / denom;
         }
     }
     case SMOOTH_DIELECTRIC: {
         float kr = fresnel(-incoming_light, N, wavelen);
-        return isReflect ? Vector3f::Constant(kr)
-                         : Vector3f::Constant(1.0f - kr);
+        return isReflect ? kr : (1.0f - kr);
     }
     default:
-        return Vector3f::Zero();
+        return 0.;
     }
 }
 
