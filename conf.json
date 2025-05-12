@@ -13,7 +13,8 @@
   },
   "renderer": {
     "spp": 256,
-    "parrallelism": 8
+    "parrallelism": 8,
+    "path": "output.png"
   },
   "scene": {
     "RussianRouletteRate": 0.7,

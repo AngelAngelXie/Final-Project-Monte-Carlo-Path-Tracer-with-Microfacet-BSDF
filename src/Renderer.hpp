@@ -18,6 +18,7 @@ class Renderer {
 
     void setParallelism(int p) { parellelism = std::min(p, MAX_THRD); }
     void setSpp(int s) { spp = s; }
+    std::string path = "./output.png";
 
   private:
     int parellelism = 8;

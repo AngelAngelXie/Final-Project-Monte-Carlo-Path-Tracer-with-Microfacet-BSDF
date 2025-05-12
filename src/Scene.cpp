@@ -89,7 +89,10 @@ float Scene::castRay(const Ray &ray, int depth,
     float fwl = getWaveLen(wavelen);
 
     if (depth == 0 && inter.obj->hasEmit()) {
-        return extract(wavelen, inter.emit);
+        float dist = (p - ray.origin).norm();
+        return clamp(0, 1,
+                     extract(wavelen, inter.m->getEmission()) *
+                         std::abs(wo.dot(n)));
     }
 
     auto mfn = m->sample(wo, n); //  microfacet normal

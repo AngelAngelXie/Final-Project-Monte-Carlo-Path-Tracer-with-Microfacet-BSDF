@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 #else
     MeshTriangle floor("../models/cornellbox/floor.obj", white);
     MeshTriangle shortbox("../models/cornellbox/shortbox.obj", white);
-    MeshTriangle tallbox("../models/cornellbox/tallbox.obj", white_glas);
+    MeshTriangle tallbox("../models/cornellbox/tallbox.obj", white_plas);
     MeshTriangle left("../models/cornellbox/left.obj", red);
     MeshTriangle right("../models/cornellbox/right.obj", green);
     MeshTriangle light_("../models/cornellbox/light.obj", light);
@@ -113,6 +113,9 @@ int main(int argc, char **argv) {
             if (confRenderer["parallelism"].is_number()) {
                 r.setParallelism(confRenderer["parallelism"]);
             }
+            if (confRenderer["output"].is_string()) {
+                r.path = confRenderer["output"];
+            }
         }
 
         auto confScene = data["scene"];
@@ -141,7 +144,7 @@ int main(int argc, char **argv) {
     scene.camera = camera;
 
     //  Scene building
-    Sphere sphere({400, 90, 130}, 70, white_plas);
+    Sphere sphere({400, 90, 130}, 70, white_glas);
 
     scene.Add(&floor);
     scene.Add(&shortbox);

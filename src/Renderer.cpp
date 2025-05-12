@@ -6,6 +6,7 @@
 #include "Eigen/src/Core/Matrix.h"
 #include "Scene.hpp"
 #include "global.hpp"
+#include "lodepng.h"
 #include <Eigen/Dense>
 #include <omp.h>
 
@@ -52,10 +53,10 @@ void Renderer::Render(const Scene &scene) {
                 float theta = 2 * M_PI * get_random_float();
                 float dx = r * std::cos(theta);
                 float dy = r * std::sin(theta);
-                Vector3f aperture_sample = eye_pos + Vector3f(dx, dy, 0);
+                eye_pos += orientation * Vector3f(dx, dy, 0);
 
                 // 3. New direction from aperture point to focal point
-                dir = (focal_point - aperture_sample).normalized();
+                dir = (focal_point - eye_pos).normalized();
             } else {
                 float x =
                     (1 - 2 * (i + get_random_float()) / (float)camera.width) *
@@ -79,21 +80,21 @@ void Renderer::Render(const Scene &scene) {
     }
     UpdateProgress(1.f);
 
-    // save framebuffer to file
-    FILE *fp = fopen("binary.ppm", "wb");
-    (void)fprintf(fp, "P6\n%d %d\n255\n", camera.width, camera.height);
-    for (auto i = 0; i < camera.height * camera.width; ++i) {
-        static unsigned char color[3];
-        color[0] =
-            (unsigned char)(255 *
-                            std::pow(clamp(0, 1, framebuffer[i].x()), 0.6f));
-        color[1] =
-            (unsigned char)(255 *
-                            std::pow(clamp(0, 1, framebuffer[i].y()), 0.6f));
-        color[2] =
-            (unsigned char)(255 *
-                            std::pow(clamp(0, 1, framebuffer[i].z()), 0.6f));
-        fwrite(color, 1, 3, fp);
+    std::cout << std::endl;
+    std::cout << "Writing image to " << path << std::endl;
+    std::vector<unsigned char> raw(4 * camera.width * camera.height);
+    float inv_gamma = 0.45;
+    for (int i = 0; i < camera.width * camera.height; i++) {
+        int ir = i << 2;
+        raw[ir] = clamp(0, 255, 255 * pow(framebuffer[i].x(), inv_gamma));
+        raw[ir + 1] = clamp(0, 255, 255 * pow(framebuffer[i].y(), inv_gamma));
+        raw[ir + 2] = clamp(0, 255, 255 * pow(framebuffer[i].z(), inv_gamma));
+        raw[ir + 3] = 255;
     }
-    fclose(fp);
+    unsigned err =
+        lodepng::encode(path.c_str(), raw, camera.width, camera.height);
+    if (err) {
+        std::cerr << "Error when writing image : " << lodepng_error_text(err)
+                  << std::endl;
+    }
 }

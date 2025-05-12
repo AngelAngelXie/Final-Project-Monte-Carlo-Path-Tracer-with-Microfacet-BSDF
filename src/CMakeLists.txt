@@ -15,7 +15,7 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 
 add_executable(RayTracing main.cpp Camera.hpp Object.hpp global.hpp Triangle.hpp Scene.cpp
         Scene.hpp Light.hpp json.hpp AreaLight.hpp BVH.cpp BVH.hpp Bounds3.hpp Ray.hpp Sphere.hpp Material.hpp Intersection.hpp
-        Renderer.cpp Renderer.hpp WaveLen.hpp)
+        Renderer.cpp Renderer.hpp WaveLen.hpp lodepng.cpp lodepng.h)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../conf.json
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
