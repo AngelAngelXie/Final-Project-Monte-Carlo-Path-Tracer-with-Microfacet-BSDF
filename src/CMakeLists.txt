@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 project(RayTracing)
 
+set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_C_COMPILER clang)
 set(CMAKE_CXX_STANDARD 17)
-# For debugging
-# set(CMAKE_CXX_FLAGS "-DDEBUG")
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libomp")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O3")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -g")
 
 find_package(Eigen3 REQUIRED)
 find_package(OpenMP REQUIRED)
