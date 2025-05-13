@@ -117,11 +117,11 @@ float Scene::castRay(const Ray &ray, int depth,
         if (inter.happened && !inter.obj->hasEmit()) {
             if (m->isDirac) {
                 l_ind = castRay(r, depth + 1, wavelen) *
-                        m->eval(wi, wo, n, wavelen, true) * invRr;
+                        m->eval(wi, wo, n, wavelen) * invRr;
             } else {
                 l_ind = castRay(r, depth + 1, wavelen) *
-                        (m->eval(wi, wo, n, wavelen, true)) *
-                        std::abs(wi.dot(n)) / m->pdf(mfn, wo, n) * invRr;
+                        (m->eval(wi, wo, n, wavelen)) * std::abs(wi.dot(n)) /
+                        m->pdf(wi, wo, n, wavelen) * invRr;
             }
         }
     } else {
@@ -144,7 +144,8 @@ float Scene::castRay(const Ray &ray, int depth,
             } else {
                 l_ind = castRay(r, depth + 1, wavelen) *
                         m->eval(wi, wo, n, wavelen, false) *
-                        std::abs(wi.dot(n)) / m->pdf(mfn, wo, n) * invRr;
+                        std::abs(wi.dot(n)) /
+                        m->pdf(wi, wo, n, wavelen, false) * invRr;
             }
         }
     }
