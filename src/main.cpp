@@ -161,19 +161,19 @@ int main(int argc, char **argv) {
     r.Render(scene);
     auto stop = std::chrono::system_clock::now();
 
-    std::cout << "Render complete: \n";
-    std::cout
-        << "Time taken: "
-        << std::chrono::duration_cast<std::chrono::hours>(stop - start).count()
-        << " hours\n";
-    std::cout << "          : "
-              << std::chrono::duration_cast<std::chrono::minutes>(stop - start)
-                     .count()
-              << " minutes\n";
-    std::cout << "          : "
-              << std::chrono::duration_cast<std::chrono::seconds>(stop - start)
-                     .count()
-              << " seconds\n";
+    using Hour = std::chrono::hours;
+    using Min = std::chrono::minutes;
+    using Sec = std::chrono::seconds;
+    using Milli = std::chrono::milliseconds;
+    auto dur = std::chrono::duration_cast<Milli>(stop - start);
+    auto hours = std::chrono::floor<Hour>(dur);
+    auto mins = std::chrono::floor<Min>(dur - hours);
+    auto secs = std::chrono::floor<Sec>(dur - hours - mins);
+    auto millis = std::chrono::duration_cast<Milli>(dur - hours - mins - secs);
+
+    std::cout << "Rendering finished in " << hours.count() << ":"
+              << mins.count() << ":" << secs.count() << "." << millis.count()
+              << std::endl;
 
     return 0;
 }

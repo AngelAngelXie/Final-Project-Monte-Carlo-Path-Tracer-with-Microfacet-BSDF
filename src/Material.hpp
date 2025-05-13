@@ -318,7 +318,8 @@ float Material::eval(const Vector3f &incoming_light,
                           EPSILON;
             return F * D * G / denom;
         } else {
-            if (incoming_light.dot(N) * outgoing_view.dot(N) >= 0) {
+            if (m_type == ROUGH_CONDUCTOR ||
+                incoming_light.dot(N) * outgoing_view.dot(N) >= 0) {
                 return 0.;
             }
             float ior = getIor(wavelen);
