@@ -111,9 +111,6 @@ int main(int argc, char **argv) {
             if (confRenderer["spp"].is_number()) {
                 r.setSpp(confRenderer["spp"]);
             }
-            if (confRenderer["parallelism"].is_number()) {
-                r.setParallelism(confRenderer["parallelism"]);
-            }
             if (confRenderer["output"].is_string()) {
                 r.path = confRenderer["output"];
             }
@@ -145,6 +142,7 @@ int main(int argc, char **argv) {
     scene.camera = camera;
 
     //  Scene building
+    /*
     Sphere sphere({400, 90, 130}, 70, white_glas);
 
     scene.Add(&floor);
@@ -154,6 +152,25 @@ int main(int argc, char **argv) {
     scene.Add(&right);
     scene.Add(&light_);
     scene.Add(&sphere);
+    */
+
+    Material *m_prism = new Material(SMOOTH_DIELECTRIC, Vector3f::Zero());
+    m_prism->roughness = 0.1f;
+    MeshTriangle *prism =
+        new MeshTriangle("../models/prism/prism.obj", white_glas);
+    Material *m_floor = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
+    m_floor->base_reflectance = Vector3f(0.7f, 0.7f, 0.7f);
+    m_floor->roughness = 3;
+    MeshTriangle *floor_pr =
+        new MeshTriangle("../models/prism/floor.obj", white);
+    Material *m_light = new Material(ROUGH_CONDUCTOR, Vector3f::Constant(20));
+    MeshTriangle *light_pr =
+        new MeshTriangle("../models/prism/light.obj", m_light);
+    MeshTriangle *wall_pr = new MeshTriangle("../models/prism/wall.obj", white);
+    scene.Add(floor_pr);
+    scene.Add(prism);
+    scene.Add(light_pr);
+    // scene.Add(wall_pr);
 
     scene.buildBVH();
 

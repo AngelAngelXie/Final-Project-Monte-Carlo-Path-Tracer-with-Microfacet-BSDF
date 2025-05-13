@@ -125,7 +125,7 @@ float Scene::castRay(const Ray &ray, int depth,
             }
         }
     } else {
-        if (wo.dot(n) < 0) { //  in-out refraction
+        if (wo.dot(mfn) < 0) { //  in-out refraction
             p += n * EPSILON;
             l_dir = directLighting(wo, p, n, m, wavelen, false);
         } else {

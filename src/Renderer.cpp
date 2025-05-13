@@ -13,6 +13,7 @@
 inline float deg2rad(const float &deg) { return deg * M_PI / 180.0; }
 
 const float EPSILON = 1e-4;
+const int PARALLELISM = 8;
 
 // The main render function. This where we iterate over all pixels in the image,
 // generate primary rays and cast these rays into the scene. The content of the
@@ -31,8 +32,8 @@ void Renderer::Render(const Scene &scene) {
     int spp = this->spp;
     std::cout << "SPP: " << spp << "\n";
     float prog = 0.;
-    init_rngs(this->parellelism);
-#pragma omp parallel for num_threads(this->parellelism) schedule(dynamic, 8)
+    init_rngs(PARALLELISM);
+#pragma omp parallel for num_threads(PARALLELISM) schedule(dynamic, 8)
     for (int m = 0; m < camera.height * camera.width; ++m) {
         // generate primary ray direction
         int i = m % camera.width, j = m / camera.width;

@@ -213,8 +213,6 @@ inline Bounds3 Triangle::getBounds() { return Union(Bounds3(v0, v1), v2); }
 inline Intersection Triangle::getIntersection(Ray ray) {
     Intersection inter;
 
-    if (ray.direction.dot(normal) > 0)
-        return inter;
     double u, v, t_tmp = 0;
     Vector3f pvec = ray.direction.cross(e2);
     double det = e1.dot(pvec);

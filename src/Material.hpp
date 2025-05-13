@@ -217,8 +217,8 @@ Material::Material(MaterialType t, Vector3f e) {
     m_emission = e;
     isDirac = (t == SMOOTH_CONDUCTOR ||
                t == SMOOTH_DIELECTRIC); //  dirac delta pdf for smooth
-    iorA = 1.67;
-    iorB = 0.0074f;
+    iorA = 1.3;
+    iorB = 0.1f;
     roughness = 1.f;
     if (t == ROUGH_DIELECTRIC) {
         roughness = 0.2f;
