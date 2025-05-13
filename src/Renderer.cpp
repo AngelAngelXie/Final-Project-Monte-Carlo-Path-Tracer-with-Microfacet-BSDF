@@ -45,7 +45,7 @@ void Renderer::Render(const Scene &scene) {
                           imageAspectRatio * scale;
                 float y = (1 - 2 * (j + .5) / (float)camera.height) * scale;
                 Vector3f focal_point =
-                    eye_pos + Vector3f(x, y, 1) * camera.focal_distance;
+                    Vector3f(x, y, 1) * camera.focal_distance;
 
                 // 2. Sample point on aperture (disk in x-y plane)
                 float r =
@@ -56,7 +56,7 @@ void Renderer::Render(const Scene &scene) {
                 eye_pos += orientation * Vector3f(dx, dy, 0);
 
                 // 3. New direction from aperture point to focal point
-                dir = (focal_point - eye_pos).normalized();
+                dir = (focal_point - Vector3f(dx, dy, 0)).normalized();
             } else {
                 float x =
                     (1 - 2 * (i + get_random_float()) / (float)camera.width) *
