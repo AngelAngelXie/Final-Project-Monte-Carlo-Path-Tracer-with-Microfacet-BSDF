@@ -150,9 +150,10 @@ class Material {
 
     //  2-terms Cauchy's equation
     float getIor(float wavelen) const {
-        return iorA + iorB * wavelen * wavelen;
+        //  I'm stupid
+        //  return iorA + iorB * wavelen * wavelen;
+        return iorA + iorB / (wavelen * wavelen);
     }
-    float getIor(WaveLenType type) const { return getIor(getWaveLen(type)); }
     // sample a ray by Material properties
     inline Vector3f sample(const Vector3f &incoming_light, const Vector3f &N);
     // given a ray, calculate the PdF of this ray
@@ -217,8 +218,8 @@ Material::Material(MaterialType t, Vector3f e) {
     m_emission = e;
     isDirac = (t == SMOOTH_CONDUCTOR ||
                t == SMOOTH_DIELECTRIC); //  dirac delta pdf for smooth
-    iorA = 1.3;
-    iorB = 0.1f;
+    iorA = 1.74;
+    iorB = 0.01f;
     roughness = 1.f;
     if (t == ROUGH_DIELECTRIC) {
         roughness = 0.2f;
@@ -265,7 +266,7 @@ float Material::pdf(const Vector3f &incoming_light,
             h = (incoming_light.dot(N) > 0) ? h : -h;
             jacobian = 1.0f / (4.0f * std::abs(N.dot(h)));
         } else {
-            float ior = getIor(wavelen);
+            float ior = getIor(getWaveLen(wavelen));
             float eta = (incoming_light.dot(N) > 0) ? ior : 1. / ior;
             Vector3f hv = (-incoming_light - outgoing_view * eta);
             h = hv.normalized();
@@ -283,7 +284,7 @@ float Material::pdf(const Vector3f &incoming_light,
         if (isReflect) {
             h = (incoming_light + outgoing_view).normalized();
         } else {
-            float ior = getIor(wavelen);
+            float ior = getIor(getWaveLen(wavelen));
             float eta = (incoming_light.dot(N) > 0) ? ior : 1. / ior;
             h = (-incoming_light - outgoing_view * eta).normalized();
         }
@@ -322,7 +323,7 @@ float Material::eval(const Vector3f &incoming_light,
                 incoming_light.dot(N) * outgoing_view.dot(N) >= 0) {
                 return 0.;
             }
-            float ior = getIor(wavelen);
+            float ior = getIor(getWaveLen(wavelen));
             float eta = (incoming_light.dot(N) > 0) ? ior : 1. / ior;
             Vector3f hv = (-incoming_light - outgoing_view * eta);
             Vector3f h = hv.normalized();
@@ -340,7 +341,9 @@ float Material::eval(const Vector3f &incoming_light,
         return FresnelSchlick(N.dot(outgoing_view), wavelen);
     }
     case SMOOTH_DIELECTRIC: {
-        float kr = fresnel(-incoming_light, N, wavelen);
+        //  I'm stupid
+        //  float kr = fresnel(-incoming_light, N, wavelen);
+        float kr = fresnel(-incoming_light, N, getWaveLen(wavelen));
         return isReflect ? kr : (1.0f - kr);
     }
     default:
