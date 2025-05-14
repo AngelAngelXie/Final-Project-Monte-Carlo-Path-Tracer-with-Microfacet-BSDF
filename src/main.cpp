@@ -60,16 +60,21 @@ int main(int argc, char **argv) {
     MeshTriangle floor("../models/cornellbox/floor.obj", white);
     MeshTriangle shortbox("../models/cornellbox/shortbox.obj", white);
     MeshTriangle tallbox("../models/cornellbox/tallbox.obj", white_plas);
+    std::cout<<"flag3"<<std::endl;
     MeshTriangle left("../models/cornellbox/left.obj", red);
+    std::cout<<"flag2"<<std::endl;
     MeshTriangle right("../models/cornellbox/right.obj", green);
+    std::cout<<"flag1"<<std::endl;
     MeshTriangle light_("../models/cornellbox/light.obj", light);
 
     std::ifstream confJson("conf.json");
+    std::cout<<"flag0"<<std::endl;
 // #endif
 
     //  Reading configuration file
     try {
         auto data = json::parse(confJson);
+        std::cout<<"flag-1"<<std::endl;
 
         auto confCam = data["camera"];
         if (!confCam.is_null()) {
@@ -105,6 +110,8 @@ int main(int argc, char **argv) {
                 camera.aperture_radius = confCam["apertureRadius"];
             }
         }
+        std::cout<<"flag-2"<<std::endl;
+
 
         auto confRenderer = data["renderer"];
         if (!confRenderer.is_null()) {
@@ -115,6 +122,8 @@ int main(int argc, char **argv) {
                 r.path = confRenderer["output"];
             }
         }
+        std::cout<<"flag-3"<<std::endl;
+
 
         auto confScene = data["scene"];
         if (!confScene.is_null()) {
@@ -133,6 +142,8 @@ int main(int argc, char **argv) {
         std::cerr << "Error when reading json config: " << e.what()
                   << std::endl;
     }
+    std::cout<<"flag-4"<<std::endl;
+
 
     camera.width = w;
     camera.height = h;
@@ -156,20 +167,23 @@ int main(int argc, char **argv) {
 
     Material *m_prism = new Material(SMOOTH_DIELECTRIC, Vector3f::Zero());
     m_prism->roughness = 0.1f;
-    MeshTriangle *prism =
-        new MeshTriangle("../models/prism/prism.obj", white_glas);
+    std::cout<<"flag-5"<<std::endl;
+    // MeshTriangle *prism =
+    //     new MeshTriangle("../models/prism/prism.obj", white_glas);
+        std::cout<<"flag-6"<<std::endl;
+
     Material *m_floor = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
     m_floor->base_reflectance = Vector3f(0.7f, 0.7f, 0.7f);
     m_floor->roughness = 3;
-    MeshTriangle *floor_pr =
-        new MeshTriangle("../models/prism/floor.obj", white);
+    // MeshTriangle *floor_pr =
+    //     new MeshTriangle("../models/prism/floor.obj", white);
     Material *m_light = new Material(ROUGH_CONDUCTOR, Vector3f::Constant(20));
-    MeshTriangle *light_pr =
-        new MeshTriangle("../models/prism/light.obj", m_light);
-    MeshTriangle *wall_pr = new MeshTriangle("../models/prism/wall.obj", white);
-    scene.Add(floor_pr);
-    scene.Add(prism);
-    scene.Add(light_pr);
+    // MeshTriangle *light_pr =
+    //     new MeshTriangle("../models/prism/light.obj", m_light);
+    // MeshTriangle *wall_pr = new MeshTriangle("../models/prism/wall.obj", white);
+    // scene.Add(floor_pr);
+    // scene.Add(prism);
+    // scene.Add(light_pr);
     // scene.Add(wall_pr);
 
     scene.buildBVH();

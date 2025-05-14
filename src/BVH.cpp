@@ -94,24 +94,33 @@ BVHBuildNode *BVHAccel::recursiveBuild(std::vector<Object *> objects) {
 
 Intersection BVHAccel::Intersect(const Ray &ray) const {
     Intersection isect;
+    std::cout<<"flag40"<<std::endl;
     if (!root)
         return isect;
+    std::cout<<"flag40.1"<<std::endl;
     isect = BVHAccel::getIntersection(root, ray);
+    std::cout<<"flag40.2"<<std::endl;
     return isect;
 }
 
 Intersection BVHAccel::getIntersection(BVHBuildNode *node,
                                        const Ray &ray) const {
+    std::cout<<"flag41"<<std::endl;
     auto d = ray.direction;
+    std::cout<<"flag41.1"<<std::endl;
     if (!node->bounds.IntersectP(ray, ray.direction_inv,
                                  std::array<int, 3>())) {
+                                    
         return Intersection();
     }
+    std::cout<<"flag42"<<std::endl;
     if (node->object) {
         return node->object->getIntersection(ray);
     }
+    std::cout<<"flag43"<<std::endl;
     Intersection isectl = getIntersection(node->left, ray),
                  isectr = getIntersection(node->right, ray);
+    std::cout<<"flag44"<<std::endl;
     return isectl.distance < isectr.distance ? isectl : isectr;
 }
 

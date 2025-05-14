@@ -14,10 +14,12 @@ void Scene::buildBVH() {
 }
 
 Intersection Scene::intersect(const Ray &ray) const {
+    std::cout<<"flag31.-1"<<std::endl;
     return this->bvh->Intersect(ray);
 }
 
 void Scene::sampleLight(Intersection &pos, float &pdf) const {
+    std::cout<<"flag30"<<std::endl;
     float emit_area_sum = 0;
     for (auto lightObj : lightsObjects) {
         emit_area_sum += lightObj->getArea();
@@ -31,10 +33,12 @@ void Scene::sampleLight(Intersection &pos, float &pdf) const {
             break;
         }
     }
+    std::cout<<"flag30.1"<<std::endl;
 }
 
 bool Scene::trace(const Ray &ray, const std::vector<Object *> &objects,
                   float &tNear, uint32_t &index, Object **hitObject) {
+    std::cout<<"flag31"<<std::endl;
     *hitObject = nullptr;
     for (uint32_t k = 0; k < objects.size(); ++k) {
         float tNearK = kInfinity;
@@ -46,7 +50,7 @@ bool Scene::trace(const Ray &ray, const std::vector<Object *> &objects,
             index = indexK;
         }
     }
-
+    std::cout<<"flag31.1"<<std::endl;
     return (*hitObject != nullptr);
 }
 
@@ -78,15 +82,21 @@ float Scene::directLighting(const Vector3f &wo, const Vector3f &p,
 // Implementation of Path Tracing
 float Scene::castRay(const Ray &ray, int depth,
                      const WaveLenType &wavelen) const {
+    std::cout<<"flag32"<<std::endl;
     auto inter = intersect(ray);
+    std::cout<<"flag32.1"<<std::endl;
     if (!inter.happened) {
         return extract(wavelen, this->backgroundColor);
     }
+    std::cout<<"flag33"<<std::endl;
+
     auto p = inter.coords;
     auto n = inter.normal;
     auto m = inter.m;
     Vector3f wo = -ray.direction;
     float fwl = getWaveLen(wavelen);
+    std::cout<<"flag34"<<std::endl;
+
 
     if (depth == 0 && inter.obj->hasEmit()) {
         float dist = (p - ray.origin).norm();
@@ -94,6 +104,8 @@ float Scene::castRay(const Ray &ray, int depth,
                      extract(wavelen, inter.m->getEmission()) *
                          std::abs(wo.dot(n)));
     }
+    std::cout<<"flag35"<<std::endl;
+
 
     auto mfn = m->sample(wo, n); //  microfacet normal
     float kr = m->fresnel(ray.direction, mfn, fwl);
@@ -101,7 +113,11 @@ float Scene::castRay(const Ray &ray, int depth,
     float l_dir = 0, l_ind = 0;
     float rr = get_random_float();
     float rd_flect = get_random_float();
+    std::cout<<"flag36"<<std::endl;
+
     if (rd_flect < kr) {
+        std::cout<<"flag37"<<std::endl;
+
         if (wo.dot(mfn) < 0) { //  inner reflection
             p -= n * EPSILON;
         } else { //  only calc direct lighting when ray is outside
@@ -125,6 +141,8 @@ float Scene::castRay(const Ray &ray, int depth,
             }
         }
     } else {
+        std::cout<<"flag38"<<std::endl;
+
         if (wo.dot(mfn) < 0) { //  in-out refraction
             p += n * EPSILON;
             l_dir = directLighting(wo, p, n, m, wavelen, false);
@@ -149,6 +167,7 @@ float Scene::castRay(const Ray &ray, int depth,
             }
         }
     }
+    std::cout<<"flag39"<<std::endl;
 
     //  use clamp to avoid fireflies
     float threshold_ind = 7;

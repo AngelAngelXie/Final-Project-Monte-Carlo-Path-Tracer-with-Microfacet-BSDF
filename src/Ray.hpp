@@ -2,7 +2,9 @@
 #ifndef RAYTRACING_RAY_H
 #define RAYTRACING_RAY_H
 #include <Eigen/Dense>
+#include <cmath>
 using namespace Eigen;
+float EPSILON = 1e-4;
 struct Ray {
     // Destination = origin + t*direction
     Vector3f origin;
@@ -12,6 +14,9 @@ struct Ray {
 
     Ray(const Vector3f &ori, const Vector3f &dir, const double _t = 0.0)
         : origin(ori), direction(dir), t(_t) {
+        if(direction.x()==0){direction.x()=EPSILON;}
+        if(direction.y()==0){direction.y()=EPSILON;}
+        if(direction.z()==0){direction.z()=EPSILON;}
         direction_inv = Vector3f(1. / direction.x(), 1. / direction.y(),
                                  1. / direction.z());
         t_min = 0.0;

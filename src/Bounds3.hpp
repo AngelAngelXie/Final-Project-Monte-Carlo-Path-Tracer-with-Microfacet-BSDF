@@ -85,6 +85,7 @@ class Bounds3 {
 };
 
 inline Vector3f Min(const Vector3f &v1, const Vector3f &v2) {
+    std::cout<<"flag53"<<std::endl;
     return Vector3f(fmin(v1.x(), v2.x()), fmin(v1.y(), v2.y()),
                     fmin(v1.z(), v2.z()));
 }
@@ -98,12 +99,24 @@ inline bool Bounds3::IntersectP(const Ray &ray, const Vector3f &invDir,
     // because Multiply is faster that Division dirIsNeg: ray direction(x,y,z),
     // dirIsNeg=[int(x>0),int(y>0),int(z>0)], use this to simplify your logic
     // TODO test if ray bound intersects
-    auto vt1 = (pMin - ray.origin).cwiseProduct(invDir),
-         vt2 = (pMax - ray.origin).cwiseProduct(invDir);
+    std::cout<<"flag50"<<std::endl;
+    for(int i=0;i<3;i++){
+        // std::cout<<pMin[i]<<std::endl;
+        // std::cout<<pMax[i]<<std::endl;
+        std::cout<<invDir[i]<<std::endl;
+    }
+    auto vt1 = (pMin - ray.origin).cwiseProduct(invDir);
+    auto vt2 = (pMax - ray.origin).cwiseProduct(invDir);
+    std::cout<<"pmin, pmax, invdir"<<std::endl;
+
+    std::cout<<"flag51"<<std::endl;
     auto vtmin = Min(vt1, vt2);
+    std::cout<<"flag51.1"<<std::endl;
     auto vtmax = Max(vt1, vt2);
+    std::cout<<"flag51.11"<<std::endl;
     auto tmin = std::max({vtmin.x(), vtmin.y(), vtmin.z()}),
          tmax = std::min({vtmax.x(), vtmax.y(), vtmax.z()});
+    std::cout<<"flag52"<<std::endl;
     return tmin - EPSILON <= tmax && tmax >= -EPSILON;
 }
 

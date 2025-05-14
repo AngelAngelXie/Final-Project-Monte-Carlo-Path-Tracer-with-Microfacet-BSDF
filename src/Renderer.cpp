@@ -33,8 +33,12 @@ void Renderer::Render(const Scene &scene) {
     std::cout << "SPP: " << spp << "\n";
     float prog = 0.;
     init_rngs(PARALLELISM);
+    std::cout<<"flag20"<<std::endl;
+
 #pragma omp parallel for num_threads(PARALLELISM) schedule(dynamic, 8)
     for (int m = 0; m < camera.height * camera.width; ++m) {
+        std::cout<<"flag21"<<std::endl;
+
         // generate primary ray direction
         int i = m % camera.width, j = m / camera.width;
         for (int k = 0; k < spp; k++) {
@@ -59,6 +63,7 @@ void Renderer::Render(const Scene &scene) {
                 // 3. New direction from aperture point to focal point
                 dir = (focal_point - Vector3f(dx, dy, 0)).normalized();
             } else {
+                std::cout<<"flag21.1"<<std::endl;
                 float x =
                     (1 - 2 * (i + get_random_float()) / (float)camera.width) *
                     imageAspectRatio * scale;
@@ -69,16 +74,21 @@ void Renderer::Render(const Scene &scene) {
             }
 
             dir = orientation * dir;
+            std::cout<<"flag21.2"<<std::endl;
             float colorR = scene.castRay(Ray(eye_pos, dir), 0, RED);
+            std::cout<<"flag21.3"<<std::endl;
             float colorG = scene.castRay(Ray(eye_pos, dir), 0, GREEN);
             float colorB = scene.castRay(Ray(eye_pos, dir), 0, BLUE);
             framebuffer[m] += Vector3f(colorR, colorG, colorB) / spp;
+            std::cout<<"flag21.4"<<std::endl;
         }
         prog += 1.f / camera.height / camera.width;
         if (i == 0) {
             UpdateProgress(prog);
         }
     }
+    std::cout<<"flag22"<<std::endl;
+
     UpdateProgress(1.f);
 
     std::cout << std::endl;
