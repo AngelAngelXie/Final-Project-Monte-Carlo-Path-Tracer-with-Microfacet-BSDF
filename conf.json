@@ -7,7 +7,7 @@
     "position": [278, 273, -800],
     "target": [278, 273, 0],
     "up": [0, 1, 0],
-    "useFov": false,
+    "useDOF": false,
     "focusDistance": 100,
     "apertureRadius": 5
   },

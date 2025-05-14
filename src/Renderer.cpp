@@ -38,13 +38,17 @@ void Renderer::Render(const Scene &scene) {
         // generate primary ray direction
         int i = m % camera.width, j = m / camera.width;
         for (int k = 0; k < spp; k++) {
+            Vector3f pos;
             Vector3f dir;
 
             if (camera.useDOF) {
                 // 1. compute focal point for current screen pixel
-                float x = (1 - 2 * (i + .5) / (float)camera.width) *
-                          imageAspectRatio * scale;
-                float y = (1 - 2 * (j + .5) / (float)camera.height) * scale;
+                float x =
+                    (1 - 2 * (i + get_random_float()) / (float)camera.width) *
+                    imageAspectRatio * scale;
+                float y =
+                    (1 - 2 * (j + get_random_float()) / (float)camera.height) *
+                    scale;
                 Vector3f focal_point =
                     Vector3f(x, y, 1) * camera.focal_distance;
 
@@ -54,7 +58,7 @@ void Renderer::Render(const Scene &scene) {
                 float theta = 2 * M_PI * get_random_float();
                 float dx = r * std::cos(theta);
                 float dy = r * std::sin(theta);
-                eye_pos += orientation * Vector3f(dx, dy, 0);
+                pos = eye_pos + orientation * Vector3f(dx, dy, 0);
 
                 // 3. New direction from aperture point to focal point
                 dir = (focal_point - Vector3f(dx, dy, 0)).normalized();
@@ -66,12 +70,13 @@ void Renderer::Render(const Scene &scene) {
                     (1 - 2 * (j + get_random_float()) / (float)camera.height) *
                     scale;
                 dir = Vector3f(x, y, 1).normalized();
+                pos = eye_pos;
             }
 
             dir = orientation * dir;
-            float colorR = scene.castRay(Ray(eye_pos, dir), 0, RED);
-            float colorG = scene.castRay(Ray(eye_pos, dir), 0, GREEN);
-            float colorB = scene.castRay(Ray(eye_pos, dir), 0, BLUE);
+            float colorR = scene.castRay(Ray(pos, dir), 0, RED);
+            float colorG = scene.castRay(Ray(pos, dir), 0, GREEN);
+            float colorB = scene.castRay(Ray(pos, dir), 0, BLUE);
             framebuffer[m] += Vector3f(colorR, colorG, colorB) / spp;
         }
         prog += 1.f / camera.height / camera.width;
