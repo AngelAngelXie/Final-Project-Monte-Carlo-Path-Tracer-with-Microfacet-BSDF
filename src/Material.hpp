@@ -25,15 +25,18 @@ class Material {
     // GGX Normal Distribution Function (NDF)
     inline float D_GGX(const Vector3f &h, const Vector3f &n, float alpha) {
         float NoH = std::abs(n.dot(h));
+        if (NoH <= EPSILON && NoH >= -EPSILON)
+            return 0.0f;
+        float tanTheta = std::sqrt(1.0f - NoH * NoH) / NoH;
         float alpha2 = alpha * alpha;
-        float denom = (NoH * NoH) * (alpha2 - 1.0f) + 1.0f;
+        float denom = (NoH * NoH) * (alpha + tanTheta * tanTheta);
         return alpha2 / (M_PI * denom * denom);
     }
     // Smith Geometry Term for GGX
     // Used to account for self-shadowing & masking in incoming & outgoing
     // vectors
-    inline float G_SmithGGX_Helper(const Vector3f &v, const Vector3f &n,
-                                   float alpha) {
+    inline float G1_SmithGGX(const Vector3f &v, const Vector3f &n,
+                             float alpha) {
         // cos of angle between surface normal & direction vector
         float NoV = std::abs(n.dot(v));
         if (NoV <= EPSILON && NoV >= -EPSILON)
@@ -45,27 +48,32 @@ class Material {
         // normal is perpendicular --> no masking/shadowing --> NO ATTENUATION
         if (tanTheta == 0.0f)
             return 1.0f;
-
+        float al_tan = alpha * tanTheta;
         // Alpha: How rough the surface is. Rougher surface = more
         // masking/shadowing tanTheta: how grazing the view angle is. Large
         // tanTheta = more masking/shadowing
+        /*
         float a = 1.0f / (alpha * tanTheta);
         if (a >= 1.6f)
             return 1.0f;
         float a2 = a * a;
+        */
 
         // schlick
         // grazing angle & roughness increase -> more masking -> returns a
         // smaller G term
-        return (3.535f * a + 2.181f * a2) / (1.0f + 2.276f * a + 2.577f * a2);
+        // Beckmann Dist
+        // return (3.535f * a + 2.181f * a2) / (1.0f + 2.276f * a + 2.577f *
+        // a2);
+        return 2. / (1. + std::sqrt(1 + al_tan * al_tan));
     }
     inline float G_SmithGGX(const Vector3f &incoming_dir,
                             const Vector3f &outgoing_dir, const Vector3f &n,
                             float alpha) {
         // both incoming & outgoing direction can experience masking/shadowing
         // thus, overall geometry term G is the product of the two
-        return G_SmithGGX_Helper(incoming_dir, n, alpha) *
-               G_SmithGGX_Helper(outgoing_dir, n, alpha);
+        return G1_SmithGGX(incoming_dir, n, alpha) *
+               G1_SmithGGX(outgoing_dir, n, alpha);
     }
     // Fresnel term using Schlick's approximation
     // used for metals, not good for refraction
@@ -149,10 +157,11 @@ class Material {
     inline bool hasEmission();
 
     //  2-terms Cauchy's equation
-    float getIor(float wavelen) const {
+    float getIor(const WaveLenType &wavelen) const {
         //  I'm stupid
         //  return iorA + iorB * wavelen * wavelen;
-        return iorA + iorB / (wavelen * wavelen);
+        float wl = getWaveLen(wavelen);
+        return iorA + iorB / (wl * wl);
     }
     // sample a ray by Material properties
     inline Vector3f sample(const Vector3f &incoming_light, const Vector3f &N);
@@ -167,7 +176,8 @@ class Material {
     Vector3f reflect(const Vector3f &I, const Vector3f &N) const {
         return 2 * N.dot(I) * N - I;
     }
-    float fresnel(const Vector3f &I, const Vector3f &N, float wavelen) const {
+    float fresnel(const Vector3f &I, const Vector3f &N,
+                  const WaveLenType &wavelen) const {
         if (this->m_type == SMOOTH_CONDUCTOR ||
             this->m_type == ROUGH_CONDUCTOR) {
             return 1;
@@ -196,7 +206,7 @@ class Material {
         // given by: kt = 1 - kr;
     }
     Vector3f refract(const Vector3f &I, const Vector3f &N,
-                     float wavelen) const {
+                     const WaveLenType &wavelen) const {
         float cosi = clamp(-1, 1, I.dot(N));
         float etai = 1, etat = getIor(wavelen);
         Vector3f n = N;
@@ -219,7 +229,7 @@ Material::Material(MaterialType t, Vector3f e) {
     isDirac = (t == SMOOTH_CONDUCTOR ||
                t == SMOOTH_DIELECTRIC); //  dirac delta pdf for smooth
     iorA = 1.74;
-    iorB = 0.01f;
+    iorB = 0.1f;
     roughness = 1.f;
     if (t == ROUGH_DIELECTRIC) {
         roughness = 0.2f;
@@ -264,19 +274,20 @@ float Material::pdf(const Vector3f &incoming_light,
         if (isReflect) {
             h = (incoming_light + outgoing_view).normalized();
             h = (incoming_light.dot(N) > 0) ? h : -h;
-            jacobian = 1.0f / (4.0f * std::abs(N.dot(h)));
+            jacobian = 1.0f / (4.0f * std::abs(h.dot(outgoing_view)));
         } else {
-            float ior = getIor(getWaveLen(wavelen));
+            float ior = getIor(wavelen);
             float eta = (incoming_light.dot(N) > 0) ? ior : 1. / ior;
             Vector3f hv = (-incoming_light - outgoing_view * eta);
             h = hv.normalized();
-            float d1 = hv.dot(h);
-            jacobian = eta * eta * std::abs(h.dot(outgoing_view)) / d1 / d1;
+            float d1 = hv.dot(hv);
+            jacobian = eta * eta * std::abs(h.dot(outgoing_view)) / d1;
         }
 
         float D = D_GGX(h, N, roughness);
 
         return D * N.dot(h) * jacobian;
+        break;
     }
     case SMOOTH_CONDUCTOR:
     case SMOOTH_DIELECTRIC: {
@@ -284,11 +295,13 @@ float Material::pdf(const Vector3f &incoming_light,
         if (isReflect) {
             h = (incoming_light + outgoing_view).normalized();
         } else {
-            float ior = getIor(getWaveLen(wavelen));
+            float ior = getIor(wavelen);
             float eta = (incoming_light.dot(N) > 0) ? ior : 1. / ior;
             h = (-incoming_light - outgoing_view * eta).normalized();
+            h = h.dot(N) > 0 ? h : -h;
         }
         return (std::abs(h.dot(N)) > 1 - EPSILON) ? 1.0f : 0.0f;
+        break;
     }
     default:
         return 0.;
@@ -323,28 +336,51 @@ float Material::eval(const Vector3f &incoming_light,
                 incoming_light.dot(N) * outgoing_view.dot(N) >= 0) {
                 return 0.;
             }
-            float ior = getIor(getWaveLen(wavelen));
+            float ior = getIor(wavelen);
             float eta = (incoming_light.dot(N) > 0) ? ior : 1. / ior;
-            Vector3f hv = (-incoming_light - outgoing_view * eta);
-            Vector3f h = hv.normalized();
-            float F = fresnel(-incoming_light,
-                              (incoming_light.dot(N) > 0 ? h : -h), wavelen);
+            Vector3f h = (-incoming_light - outgoing_view * eta).normalized();
+            h = h.dot(N) > 0 ? h : -h;
+            float F = fresnel(-incoming_light, h, wavelen);
             float D = D_GGX(h, N, roughness);
             float G = G_SmithGGX(incoming_light, outgoing_view, h, roughness);
-            float d1 = hv.dot(h);
-            return (1.0f - F) * D * G * eta * eta / d1 / d1;
+            float hol = h.dot(incoming_light);
+            float hov = h.dot(outgoing_view);
+            float den = hol + eta * hov;
+            den *= den;
+            den *= std::abs(N.dot(incoming_light) * N.dot(outgoing_view));
+            return (1.0f - F) * D * G * eta * eta * std::abs(hol * hov) / den;
         }
+        break;
     }
-    case SMOOTH_CONDUCTOR: {
+    case SMOOTH_CONDUCTOR:
+    case SMOOTH_DIELECTRIC: {
         // Perfect mirror: Only evaluate Fresnel. Smooth surface will
         // not have microfacets, thus no self-shadows neither
-        return FresnelSchlick(N.dot(outgoing_view), wavelen);
-    }
-    case SMOOTH_DIELECTRIC: {
-        //  I'm stupid
-        //  float kr = fresnel(-incoming_light, N, wavelen);
-        float kr = fresnel(-incoming_light, N, getWaveLen(wavelen));
-        return isReflect ? kr : (1.0f - kr);
+        if (isReflect) {
+            Vector3f h = (incoming_light + outgoing_view).normalized();
+            h = (incoming_light.dot(N) > 0) ? h : -h;
+            if (incoming_light.dot(N) * outgoing_view.dot(N) <= 0 ||
+                h.dot(N) < 1 - EPSILON) {
+                return 0.;
+            } else {
+                return (m_type == SMOOTH_CONDUCTOR)
+                           ? FresnelSchlick(std::abs(N.dot(outgoing_view)),
+                                            wavelen)
+                           : fresnel(-incoming_light, N, wavelen);
+            }
+        } else {
+            float ior = getIor(wavelen);
+            float eta = (incoming_light.dot(N) > 0) ? ior : 1. / ior;
+            Vector3f h = (-incoming_light - outgoing_view * eta).normalized();
+            h = (h.dot(N) > 0) ? h : -h;
+            if (m_type == SMOOTH_CONDUCTOR ||
+                incoming_light.dot(N) * outgoing_view.dot(N) >= 0 ||
+                h.dot(N) < 1 - EPSILON) {
+                return 0.;
+            } else {
+                return 1. - fresnel(-incoming_light, N, wavelen);
+            }
+        }
     }
     default:
         return 0.;

@@ -3,10 +3,8 @@
 #include "Scene.hpp"
 #include "Sphere.hpp"
 #include "Triangle.hpp"
-#include "global.hpp"
 #include "json.hpp"
 #include <chrono>
-#include <filesystem>
 
 using namespace nlohmann;
 
@@ -33,13 +31,11 @@ int main(int argc, char **argv) {
     Material *white_plas = new Material(ROUGH_DIELECTRIC, Vector3f::Zero());
     white_plas->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
     Material *white_glas = new Material(SMOOTH_DIELECTRIC, Vector3f::Zero());
-    white_glas->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
     Material *light = new Material(
         ROUGH_CONDUCTOR,
         (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
          15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
          18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
-    light->Kd = Vector3f(0.65f, .65, .65);
 
     int w = 384, h = 384;
     Vector3f camPos(278, 273, -800);
@@ -142,7 +138,6 @@ int main(int argc, char **argv) {
     scene.camera = camera;
 
     //  Scene building
-    /*
     Sphere sphere({400, 90, 130}, 70, white_glas);
 
     scene.Add(&floor);
@@ -152,10 +147,10 @@ int main(int argc, char **argv) {
     scene.Add(&right);
     scene.Add(&light_);
     scene.Add(&sphere);
-    */
 
-    Material *m_prism = new Material(SMOOTH_DIELECTRIC, Vector3f::Zero());
-    m_prism->roughness = 0.1f;
+    /*
+    Material *m_prism = new Material(ROUGH_DIELECTRIC, Vector3f::Zero());
+    m_prism->roughness = 0.04f;
     MeshTriangle *prism =
         new MeshTriangle("../models/prism/prism.obj", white_glas);
     Material *m_floor = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
@@ -163,14 +158,15 @@ int main(int argc, char **argv) {
     m_floor->roughness = 3;
     MeshTriangle *floor_pr =
         new MeshTriangle("../models/prism/floor.obj", white);
-    Material *m_light = new Material(ROUGH_CONDUCTOR, Vector3f::Constant(20));
+    Material *m_light = new Material(ROUGH_CONDUCTOR, Vector3f::Constant(10));
     MeshTriangle *light_pr =
         new MeshTriangle("../models/prism/light.obj", m_light);
     MeshTriangle *wall_pr = new MeshTriangle("../models/prism/wall.obj", white);
     scene.Add(floor_pr);
     scene.Add(prism);
     scene.Add(light_pr);
-    // scene.Add(wall_pr);
+    scene.Add(wall_pr);
+    */
 
     scene.buildBVH();
 

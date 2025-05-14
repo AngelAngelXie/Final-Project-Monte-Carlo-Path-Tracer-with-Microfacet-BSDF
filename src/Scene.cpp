@@ -6,6 +6,7 @@
 #include "Eigen/src/Core/Matrix.h"
 #include "Material.hpp"
 #include "WaveLen.hpp"
+#include "global.hpp"
 #include <Eigen/Dense>
 
 void Scene::buildBVH() {
@@ -68,7 +69,7 @@ float Scene::directLighting(const Vector3f &wo, const Vector3f &p,
         inter = intersect(rlight);
         if (inter.happened && std::abs(inter.distance - dist) < EPSILON) {
             l_dir += emit * m->eval(ws, wo, n, wavelen, isReflect) *
-                     (ws.dot(n)) * ((-ws).dot(n_light)) / (dist * dist) / pdf /
+                     (ws.dot(n)) * (-ws).dot(n_light) / (dist * dist) / pdf /
                      n_dir_sample;
         }
     }
@@ -86,7 +87,6 @@ float Scene::castRay(const Ray &ray, int depth,
     auto n = inter.normal;
     auto m = inter.m;
     Vector3f wo = -ray.direction;
-    float fwl = getWaveLen(wavelen);
 
     if (depth == 0 && inter.obj->hasEmit()) {
         float dist = (p - ray.origin).norm();
@@ -96,7 +96,7 @@ float Scene::castRay(const Ray &ray, int depth,
     }
 
     auto mfn = m->sample(wo, n); //  microfacet normal
-    float kr = m->fresnel(ray.direction, mfn, fwl);
+    float kr = m->fresnel(ray.direction, mfn, wavelen);
 
     float l_dir = 0, l_ind = 0;
     float rr = get_random_float();
@@ -117,11 +117,12 @@ float Scene::castRay(const Ray &ray, int depth,
         if (inter.happened && !inter.obj->hasEmit()) {
             if (m->isDirac) {
                 l_ind = castRay(r, depth + 1, wavelen) *
-                        m->eval(wi, wo, n, wavelen) * invRr;
+                        m->eval(wi, wo, n, wavelen, true) * invRr;
             } else {
                 l_ind = castRay(r, depth + 1, wavelen) *
-                        (m->eval(wi, wo, n, wavelen)) * std::abs(wi.dot(n)) /
-                        m->pdf(wi, wo, n, wavelen) * invRr;
+                        (m->eval(wi, wo, n, wavelen, true)) *
+                        std::abs(wo.dot(n)) / m->pdf(wi, wo, n, wavelen, true) *
+                        invRr;
             }
         }
     } else {
@@ -134,7 +135,7 @@ float Scene::castRay(const Ray &ray, int depth,
         if (rr >= this->rrRate) {
             return l_dir;
         }
-        auto wi = m->refract(ray.direction, mfn, fwl);
+        auto wi = m->refract(ray.direction, mfn, wavelen);
         Ray r(p, wi);
         inter = intersect(r);
         if (inter.happened && !inter.obj->hasEmit()) {
@@ -144,14 +145,14 @@ float Scene::castRay(const Ray &ray, int depth,
             } else {
                 l_ind = castRay(r, depth + 1, wavelen) *
                         m->eval(wi, wo, n, wavelen, false) *
-                        std::abs(wi.dot(n)) /
+                        std::abs(wo.dot(n)) /
                         m->pdf(wi, wo, n, wavelen, false) * invRr;
             }
         }
     }
 
     //  use clamp to avoid fireflies
-    float threshold_ind = 7;
+    float threshold_ind = 5;
     l_ind = clamp(0, threshold_ind, l_ind);
     return l_dir + l_ind;
 }
