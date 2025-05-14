@@ -94,7 +94,7 @@ BVHBuildNode *BVHAccel::recursiveBuild(std::vector<Object *> objects) {
 
 Intersection BVHAccel::Intersect(const Ray &ray) const {
     Intersection isect;
-    if (!root)
+    if (root != nullptr)
         return isect;
     isect = BVHAccel::getIntersection(root, ray);
     return isect;
@@ -107,7 +107,7 @@ Intersection BVHAccel::getIntersection(BVHBuildNode *node,
                                  std::array<int, 3>())) {
         return Intersection();
     }
-    if (node->object) {
+    if (node->object != nullptr) {
         return node->object->getIntersection(ray);
     }
     Intersection isectl = getIntersection(node->left, ray),
