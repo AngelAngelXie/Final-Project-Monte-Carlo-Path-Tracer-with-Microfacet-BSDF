@@ -103,8 +103,8 @@ Intersection BVHAccel::Intersect(const Ray &ray) const {
 Intersection BVHAccel::getIntersection(BVHBuildNode *node,
                                        const Ray &ray) const {
     auto d = ray.direction;
-    if (!node->bounds.IntersectP(ray, ray.direction_inv,
-                                 std::array<int, 3>())) {
+    if (node == nullptr || !node->bounds.IntersectP(ray, ray.direction_inv,
+                                                    std::array<int, 3>())) {
         return Intersection();
     }
     if (node->object != nullptr) {
