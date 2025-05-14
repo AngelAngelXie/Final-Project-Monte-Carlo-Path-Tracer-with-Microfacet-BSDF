@@ -46,17 +46,17 @@ int main(int argc, char **argv) {
     Vector3f camTarget(278, 273, 0);
     Vector3f camUp(0, 1, 0);
 
-#ifdef DEBUG
-    std::string root = std::filesystem::current_path().string();
-    MeshTriangle floor(root + "/models/cornellbox/floor.obj", white);
-    MeshTriangle shortbox(root + "/models/cornellbox/shortbox.obj", white);
-    MeshTriangle tallbox(root + "/models/cornellbox/tallbox.obj", white);
-    MeshTriangle left(root + "/models/cornellbox/left.obj", red);
-    MeshTriangle right(root + "/models/cornellbox/right.obj", green);
-    MeshTriangle light_(root + "/models/cornellbox/light.obj", light);
+// #ifdef DEBUG
+//     std::string root = std::filesystem::current_path().string();
+//     MeshTriangle floor(root + "../models/cornellbox/floor.obj", white);
+//     MeshTriangle shortbox(root + "../models/cornellbox/shortbox.obj", white);
+//     MeshTriangle tallbox(root + "../models/cornellbox/tallbox.obj", white);
+//     MeshTriangle left(root + "../models/cornellbox/left.obj", red);
+//     MeshTriangle right(root + "../models/cornellbox/right.obj", green);
+//     MeshTriangle light_(root + "../models/cornellbox/light.obj", light);
 
-    std::ifstream confJson(root + "/build/conf.json");
-#else
+//     std::ifstream confJson(root + "/build/conf.json");
+// #else
     MeshTriangle floor("../models/cornellbox/floor.obj", white);
     MeshTriangle shortbox("../models/cornellbox/shortbox.obj", white);
     MeshTriangle tallbox("../models/cornellbox/tallbox.obj", white_plas);
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     MeshTriangle light_("../models/cornellbox/light.obj", light);
 
     std::ifstream confJson("conf.json");
-#endif
+// #endif
 
     //  Reading configuration file
     try {
