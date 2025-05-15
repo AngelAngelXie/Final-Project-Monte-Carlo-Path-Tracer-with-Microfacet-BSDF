@@ -77,9 +77,9 @@ class Material {
     }
     // Fresnel term using Schlick's approximation
     // used for metals, not good for refraction
-    inline float FresnelSchlick(float cosTheta,
+    inline float FresnelSchlick(float cosTheta, const Vector2f &uv,
                                 const WaveLenType &wavelen) const {
-        float f = ::extract(wavelen, this->base_reflectance);
+        float f = getReflectance(uv, wavelen);
         float invc = 1.f - cosTheta;
         float c2 = invc * invc;
         return f + (1.f - f) * c2 * c2 * invc;
@@ -131,6 +131,16 @@ class Material {
     // === End of GGX Functions ===
     // ============================
 
+    inline float getReflectance(const Vector2f &uv,
+                                const WaveLenType &wavelen) const {
+        if (!textured) {
+            return extract(wavelen, base_reflectance);
+        }
+        float scale = 16.f;
+        int cx = uv.x() * scale;
+        int cy = uv.y() * scale;
+        return ((cx + cy) & 1) ? 0.9 : 0.1;
+    }
     // ==============================
     // === Start of GGX Functions ===
 
@@ -172,7 +182,8 @@ class Material {
     // given a ray direction and normal, calculate the contribution of this ray
     inline float eval(const Vector3f &incoming_light,
                       const Vector3f &outgoing_view, const Vector3f &N,
-                      const WaveLenType &wavelen, bool isReflect = true);
+                      const WaveLenType &wavelen, const Vector2f &uv = {0, 0},
+                      bool isReflect = true);
     Vector3f reflect(const Vector3f &I, const Vector3f &N) const {
         return 2 * N.dot(I) * N - I;
     }
@@ -310,7 +321,8 @@ float Material::pdf(const Vector3f &incoming_light,
 
 float Material::eval(const Vector3f &incoming_light,
                      const Vector3f &outgoing_view, const Vector3f &N,
-                     const WaveLenType &wavelen, bool isReflect) {
+                     const WaveLenType &wavelen, const Vector2f &uv,
+                     bool isReflect) {
     switch (m_type) {
     case ROUGH_CONDUCTOR:
     case ROUGH_DIELECTRIC: {
@@ -320,10 +332,10 @@ float Material::eval(const Vector3f &incoming_light,
             }
             Vector3f h = (incoming_light + outgoing_view).normalized();
             h = incoming_light.dot(N) > 0 ? h : -h;
-            float F =
-                (m_type == ROUGH_CONDUCTOR)
-                    ? FresnelSchlick(std::abs(h.dot(outgoing_view)), wavelen)
-                    : fresnel(-incoming_light, h, wavelen);
+            float F = (m_type == ROUGH_CONDUCTOR)
+                          ? FresnelSchlick(std::abs(h.dot(outgoing_view)), uv,
+                                           wavelen)
+                          : fresnel(-incoming_light, h, wavelen);
             float D = D_GGX(h, N, roughness);
             float G = G_SmithGGX(incoming_light, outgoing_view, h, roughness);
 
@@ -364,7 +376,7 @@ float Material::eval(const Vector3f &incoming_light,
                 return 0.;
             } else {
                 return (m_type == SMOOTH_CONDUCTOR)
-                           ? FresnelSchlick(std::abs(N.dot(outgoing_view)),
+                           ? FresnelSchlick(std::abs(N.dot(outgoing_view)), uv,
                                             wavelen)
                            : fresnel(-incoming_light, N, wavelen);
             }

@@ -4,6 +4,7 @@
 
 #include "Scene.hpp"
 #include "Eigen/src/Core/Matrix.h"
+#include "Intersection.hpp"
 #include "Material.hpp"
 #include "WaveLen.hpp"
 #include "global.hpp"
@@ -51,9 +52,12 @@ bool Scene::trace(const Ray &ray, const std::vector<Object *> &objects,
     return (*hitObject != nullptr);
 }
 
-float Scene::directLighting(const Vector3f &wo, const Vector3f &p,
-                            const Vector3f &n, Material *m,
+float Scene::directLighting(const Vector3f &wo, const Intersection &surf_inter,
                             const WaveLenType &wavelen, bool isReflect) const {
+    Material *m = surf_inter.m;
+    Vector3f p = surf_inter.coords;
+    Vector3f n = surf_inter.normal;
+    Vector2f uv = surf_inter.tcoords;
     float l_dir = 0;
     float pdf;
     int n_dir_sample = 4;
@@ -68,7 +72,7 @@ float Scene::directLighting(const Vector3f &wo, const Vector3f &p,
         Ray rlight(p, ws);
         inter = intersect(rlight);
         if (inter.happened && std::abs(inter.distance - dist) < EPSILON) {
-            l_dir += emit * m->eval(ws, wo, n, wavelen, isReflect) *
+            l_dir += emit * m->eval(ws, wo, n, wavelen, uv, isReflect) *
                      (ws.dot(n)) * (-ws).dot(n_light) / (dist * dist) / pdf /
                      n_dir_sample;
         }
@@ -86,6 +90,7 @@ float Scene::castRay(const Ray &ray, int depth,
     auto p = inter.coords;
     auto n = inter.normal;
     auto m = inter.m;
+    auto uv = inter.tcoords;
     Vector3f wo = -ray.direction;
 
     if (depth == 0 && inter.obj->hasEmit()) {
@@ -106,7 +111,8 @@ float Scene::castRay(const Ray &ray, int depth,
             p -= n * EPSILON;
         } else { //  only calc direct lighting when ray is outside
             p += n * EPSILON;
-            l_dir = directLighting(wo, p, n, m, wavelen, true);
+            inter.coords += n * EPSILON;
+            l_dir = directLighting(wo, inter, wavelen, true);
         }
         if (rr >= this->rrRate) {
             return l_dir;
@@ -117,10 +123,10 @@ float Scene::castRay(const Ray &ray, int depth,
         if (inter.happened && !inter.obj->hasEmit()) {
             if (m->isDirac) {
                 l_ind = castRay(r, depth + 1, wavelen) *
-                        m->eval(wi, wo, n, wavelen, true) * invRr;
+                        m->eval(wi, wo, n, wavelen, uv, true) * invRr;
             } else {
                 l_ind = castRay(r, depth + 1, wavelen) *
-                        (m->eval(wi, wo, n, wavelen, true)) *
+                        (m->eval(wi, wo, n, wavelen, uv, true)) *
                         std::abs(wo.dot(n)) / m->pdf(wi, wo, n, wavelen, true) *
                         invRr;
             }
@@ -128,7 +134,8 @@ float Scene::castRay(const Ray &ray, int depth,
     } else {
         if (wo.dot(mfn) < 0) { //  in-out refraction
             p += n * EPSILON;
-            l_dir = directLighting(wo, p, n, m, wavelen, false);
+            inter.coords += n * EPSILON;
+            l_dir = directLighting(wo, inter, wavelen, false);
         } else {
             p -= n * EPSILON;
         }
@@ -141,10 +148,10 @@ float Scene::castRay(const Ray &ray, int depth,
         if (inter.happened && !inter.obj->hasEmit()) {
             if (m->isDirac) {
                 l_ind = castRay(r, depth + 1, wavelen) *
-                        m->eval(wi, wo, n, wavelen, false) * invRr;
+                        m->eval(wi, wo, n, wavelen, uv, false) * invRr;
             } else {
                 l_ind = castRay(r, depth + 1, wavelen) *
-                        m->eval(wi, wo, n, wavelen, false) *
+                        m->eval(wi, wo, n, wavelen, uv, false) *
                         std::abs(wo.dot(n)) /
                         m->pdf(wi, wo, n, wavelen, false) * invRr;
             }

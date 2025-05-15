@@ -8,6 +8,7 @@
 #include "BVH.hpp"
 #include "Camera.hpp"
 #include "Eigen/src/Core/Matrix.h"
+#include "Intersection.hpp"
 #include "Light.hpp"
 #include "Material.hpp"
 #include "Object.hpp"
@@ -59,8 +60,7 @@ class Scene {
                     const Vector3f &dir, float specularExponent);
     Vector3f calculate_direct_light(Vector3f p, Vector3f wo, Vector3f N) const;
 
-    float directLighting(const Vector3f &wo, const Vector3f &p,
-                         const Vector3f &n, Material *m,
+    float directLighting(const Vector3f &wo, const Intersection &surf_inter,
                          const WaveLenType &wavelen,
                          bool isReflect = true) const;
 

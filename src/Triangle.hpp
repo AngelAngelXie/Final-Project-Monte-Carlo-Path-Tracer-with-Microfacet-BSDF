@@ -42,11 +42,10 @@ class Triangle : public Object {
   public:
     Vector3f v0, v1, v2; // vertices A, B ,C , counter-clockwise order
     Vector3f e1, e2;     // 2 edges v1-v0, v2-v0;
-    Vector3f t0, t1, t2; // texture coords
+    Vector2f t0, t1, t2; // texture coords
     Vector3f normal;
     float area;
     Material *m;
-    bool usePattern;
 
     Triangle(Vector3f _v0, Vector3f _v1, Vector3f _v2, Material *_m = nullptr)
         : v0(_v0), v1(_v1), v2(_v2), m(_m) {
@@ -83,7 +82,7 @@ class MeshTriangle : public Object {
   public:
     MeshTriangle(const std::string &filename, Material *mt = new Material(),
                  const Vector3f &translation = Vector3f::Zero(),
-                 float zoom = 1.0f, bool applypattern = false) {
+                 float zoom = 1.0f) {
         objl::Loader loader;
         loader.LoadFile(filename);
         area = 0;
@@ -114,17 +113,13 @@ class MeshTriangle : public Object {
             Triangle tri(face_vertices[0], face_vertices[1], face_vertices[2],
                          mt);
 
-            if (applypattern) {
-                tri.t0 =
-                    Vector3f(mesh.Vertices[i + 0].TextureCoordinate.X,
-                             mesh.Vertices[i + 0].TextureCoordinate.Y, 0.0f);
-                tri.t1 =
-                    Vector3f(mesh.Vertices[i + 1].TextureCoordinate.X,
-                             mesh.Vertices[i + 1].TextureCoordinate.Y, 0.0f);
-                tri.t2 =
-                    Vector3f(mesh.Vertices[i + 2].TextureCoordinate.X,
-                             mesh.Vertices[i + 2].TextureCoordinate.Y, 0.0f);
-                tri.usePattern = true;
+            if (mt->textured) {
+                tri.t0 = Vector2f(mesh.Vertices[i + 0].TextureCoordinate.X,
+                                  mesh.Vertices[i + 0].TextureCoordinate.Y);
+                tri.t1 = Vector2f(mesh.Vertices[i + 1].TextureCoordinate.X,
+                                  mesh.Vertices[i + 1].TextureCoordinate.Y);
+                tri.t2 = Vector2f(mesh.Vertices[i + 2].TextureCoordinate.X,
+                                  mesh.Vertices[i + 2].TextureCoordinate.Y);
             }
 
             triangles.emplace_back(tri); // Use emplace_back with temp tri
@@ -246,13 +241,13 @@ inline Intersection Triangle::getIntersection(Ray ray) {
         return inter;
     t_tmp = e2.dot(qvec) * det_inv;
 
-    // TODO find ray triangle intersection
     if (t_tmp < 0)
         return inter;
     inter.happened = true;
     inter.coords = ray(t_tmp);
     inter.normal = normal;
     inter.distance = t_tmp;
+    inter.tcoords = (1 - u - v) * this->t0 + u * this->t1 + v * this->t2;
     inter.obj = this;
     inter.m = m;
     return inter;

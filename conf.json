@@ -4,8 +4,8 @@
     "width": 384,
     "height": 384,
     "fov": 45,
-    "position": [278, 273, -800],
-    "target": [278, 273, 0],
+    "position": [278, 150, -1000],
+    "target": [278, 0, 0],
     "up": [0, 1, 0],
     "useDOF": false,
     "focusDistance": 100,
@@ -13,7 +13,7 @@
   },
   "renderer": {
     "spp": 256,
-    "parrallelism": 8,
+    "parrallelism": 1,
     "path": "output.png"
   },
   "scene": {

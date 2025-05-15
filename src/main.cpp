@@ -1,7 +1,6 @@
 #include "Material.hpp"
 #include "Renderer.hpp"
 #include "Scene.hpp"
-#include "Sphere.hpp"
 #include "Triangle.hpp"
 #include "json.hpp"
 #include <chrono>
@@ -28,6 +27,8 @@ int main(int argc, char **argv) {
     blue->base_reflectance = Vector3f(0.14f, 0.091f, .45f);
     Material *white = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
     white->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
+    Material *pattern = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
+    pattern->textured = true;
     Material *white_plas = new Material(ROUGH_DIELECTRIC, Vector3f::Zero());
     white_plas->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
     Material *white_glas = new Material(SMOOTH_DIELECTRIC, Vector3f::Zero());
@@ -53,9 +54,9 @@ int main(int argc, char **argv) {
 
     std::ifstream confJson(root + "/build/conf.json");
 #else
-    MeshTriangle floor("../models/backwall.obj", green, Vector3f::Zero());
+    MeshTriangle wall("../models/backwall.obj", green, Vector3f::Zero());
     MeshTriangle light_("../models/light.obj", light, Vector3f(0, 200, 0));
-    MeshTriangle bottom("../models/bottom.obj", green, Vector3f::Zero());
+    MeshTriangle floor("../models/bottom.obj", pattern, Vector3f::Zero());
     MeshTriangle soldier_1("../models/soldier_zoom_12_final.obj", white,
                            Vector3f(-559, 0, -271));
     MeshTriangle soldier_2("../models/soldier_zoom_12_final.obj", white,
@@ -145,9 +146,9 @@ int main(int argc, char **argv) {
     scene.camera = camera;
 
     //  Scene building
-    scene.Add(&floor);
+    scene.Add(&wall);
     scene.Add(&light_);
-    scene.Add(&bottom);
+    scene.Add(&floor);
     scene.Add(&soldier_1);
     scene.Add(&soldier_2);
     scene.Add(&soldier_3);
