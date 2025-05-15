@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 3.10)
+project(RayTracing)
+
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O3")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -g")
+
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
+add_executable(RayTracing main.cpp Camera.hpp Object.hpp global.hpp Triangle.hpp Scene.cpp
+        Scene.hpp Light.hpp json.hpp AreaLight.hpp BVH.cpp BVH.hpp Bounds3.hpp Ray.hpp Sphere.hpp Material.hpp Intersection.hpp
+        Renderer.cpp Renderer.hpp WaveLen.hpp lodepng.cpp lodepng.h)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../conf.json
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+target_compile_options(RayTracing PUBLIC -fopenmp)
+target_link_libraries(RayTracing PUBLIC -fopenmp)
