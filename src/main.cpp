@@ -53,12 +53,19 @@ int main(int argc, char **argv) {
 
     std::ifstream confJson(root + "/build/conf.json");
 #else
-    MeshTriangle floor("../models/cornellbox/floor.obj", white);
-    MeshTriangle shortbox("../models/cornellbox/shortbox.obj", white);
-    MeshTriangle tallbox("../models/cornellbox/tallbox.obj", white_plas);
-    MeshTriangle left("../models/cornellbox/left.obj", red);
-    MeshTriangle right("../models/cornellbox/right.obj", green);
-    MeshTriangle light_("../models/cornellbox/light.obj", light);
+    MeshTriangle floor("../models/backwall.obj", green, Vector3f::Zero());
+    MeshTriangle light_("../models/light.obj", light, Vector3f(0, 200, 0));
+    MeshTriangle bottom("../models/bottom.obj", green, Vector3f::Zero());
+    MeshTriangle soldier_1("../models/soldier_zoom_12_final.obj", white,
+                           Vector3f(-559, 0, -271));
+    MeshTriangle soldier_2("../models/soldier_zoom_12_final.obj", white,
+                           Vector3f(160, 0, -271));
+    MeshTriangle soldier_3("../models/soldier_zoom_12_final.obj", white,
+                           Vector3f(160, 0, -50));
+    MeshTriangle soldier_4("../models/soldier_zoom_12_final.obj", white,
+                           Vector3f(-546, 0, -50));
+    MeshTriangle king("../models/king_zoom_12_final.obj", white,
+                      Vector3f::Zero());
 
     std::ifstream confJson("conf.json");
 #endif
@@ -138,35 +145,14 @@ int main(int argc, char **argv) {
     scene.camera = camera;
 
     //  Scene building
-    Sphere sphere({400, 90, 130}, 70, white_glas);
-
     scene.Add(&floor);
-    scene.Add(&shortbox);
-    scene.Add(&tallbox);
-    scene.Add(&left);
-    scene.Add(&right);
     scene.Add(&light_);
-    scene.Add(&sphere);
-
-    /*
-    Material *m_prism = new Material(ROUGH_DIELECTRIC, Vector3f::Zero());
-    m_prism->roughness = 0.04f;
-    MeshTriangle *prism =
-        new MeshTriangle("../models/prism/prism.obj", white_glas);
-    Material *m_floor = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
-    m_floor->base_reflectance = Vector3f(0.7f, 0.7f, 0.7f);
-    m_floor->roughness = 3;
-    MeshTriangle *floor_pr =
-        new MeshTriangle("../models/prism/floor.obj", white);
-    Material *m_light = new Material(ROUGH_CONDUCTOR, Vector3f::Constant(10));
-    MeshTriangle *light_pr =
-        new MeshTriangle("../models/prism/light.obj", m_light);
-    MeshTriangle *wall_pr = new MeshTriangle("../models/prism/wall.obj", white);
-    scene.Add(floor_pr);
-    scene.Add(prism);
-    scene.Add(light_pr);
-    scene.Add(wall_pr);
-    */
+    scene.Add(&bottom);
+    scene.Add(&soldier_1);
+    scene.Add(&soldier_2);
+    scene.Add(&soldier_3);
+    scene.Add(&soldier_4);
+    scene.Add(&king);
 
     scene.buildBVH();
 

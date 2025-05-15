@@ -46,6 +46,7 @@ class Triangle : public Object {
     Vector3f normal;
     float area;
     Material *m;
+    bool usePattern;
 
     Triangle(Vector3f _v0, Vector3f _v1, Vector3f _v2, Material *_m = nullptr)
         : v0(_v0), v1(_v1), v2(_v2), m(_m) {
@@ -80,7 +81,9 @@ class Triangle : public Object {
 
 class MeshTriangle : public Object {
   public:
-    MeshTriangle(const std::string &filename, Material *mt = new Material()) {
+    MeshTriangle(const std::string &filename, Material *mt = new Material(),
+                 const Vector3f &translation = Vector3f::Zero(),
+                 float zoom = 1.0f, bool applypattern = false) {
         objl::Loader loader;
         loader.LoadFile(filename);
         area = 0;
@@ -94,6 +97,7 @@ class MeshTriangle : public Object {
         Vector3f max_vert = Vector3f{-std::numeric_limits<float>::infinity(),
                                      -std::numeric_limits<float>::infinity(),
                                      -std::numeric_limits<float>::infinity()};
+
         for (int i = 0; i < mesh.Vertices.size(); i += 3) {
             std::array<Vector3f, 3> face_vertices;
 
@@ -101,18 +105,29 @@ class MeshTriangle : public Object {
                 auto vert = Vector3f(mesh.Vertices[i + j].Position.X,
                                      mesh.Vertices[i + j].Position.Y,
                                      mesh.Vertices[i + j].Position.Z);
-                face_vertices[j] = vert;
+                face_vertices[j] = zoom * vert + translation;
 
-                min_vert = Vector3f(std::min(min_vert.x(), vert.x()),
-                                    std::min(min_vert.y(), vert.y()),
-                                    std::min(min_vert.z(), vert.z()));
-                max_vert = Vector3f(std::max(max_vert.x(), vert.x()),
-                                    std::max(max_vert.y(), vert.y()),
-                                    std::max(max_vert.z(), vert.z()));
+                min_vert = min_vert.cwiseMin(face_vertices[j]);
+                max_vert = max_vert.cwiseMax(face_vertices[j]);
             }
 
-            triangles.emplace_back(face_vertices[0], face_vertices[1],
-                                   face_vertices[2], mt);
+            Triangle tri(face_vertices[0], face_vertices[1], face_vertices[2],
+                         mt);
+
+            if (applypattern) {
+                tri.t0 =
+                    Vector3f(mesh.Vertices[i + 0].TextureCoordinate.X,
+                             mesh.Vertices[i + 0].TextureCoordinate.Y, 0.0f);
+                tri.t1 =
+                    Vector3f(mesh.Vertices[i + 1].TextureCoordinate.X,
+                             mesh.Vertices[i + 1].TextureCoordinate.Y, 0.0f);
+                tri.t2 =
+                    Vector3f(mesh.Vertices[i + 2].TextureCoordinate.X,
+                             mesh.Vertices[i + 2].TextureCoordinate.Y, 0.0f);
+                tri.usePattern = true;
+            }
+
+            triangles.emplace_back(tri); // Use emplace_back with temp tri
         }
 
         bounding_box = Bounds3(min_vert, max_vert);
@@ -122,6 +137,7 @@ class MeshTriangle : public Object {
             ptrs.push_back(&tri);
             area += tri.area;
         }
+
         bvh = new BVHAccel(ptrs);
     }
 

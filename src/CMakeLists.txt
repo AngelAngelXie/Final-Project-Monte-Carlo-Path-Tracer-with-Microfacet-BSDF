@@ -10,7 +10,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O3")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -g")
 
 find_package(Eigen3 REQUIRED)
-find_package(OpenMP REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 add_executable(RayTracing main.cpp Camera.hpp Object.hpp global.hpp Triangle.hpp Scene.cpp
@@ -20,4 +19,3 @@ add_executable(RayTracing main.cpp Camera.hpp Object.hpp global.hpp Triangle.hpp
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../conf.json
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(RayTracing PUBLIC OpenMP::OpenMP_CXX)
