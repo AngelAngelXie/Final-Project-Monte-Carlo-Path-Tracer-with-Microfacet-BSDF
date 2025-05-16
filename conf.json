@@ -1,8 +1,8 @@
 {
   "_": "Example configuration file",
   "camera": {
-    "width": 512,
-    "height": 512,
+    "width": 325,
+    "height": 325,
     "fov": 45,
     "position": [278, 50, -1200],
     "target": [278, 0, 0],
@@ -12,7 +12,7 @@
     "apertureRadius": 5
   },
   "renderer": {
-    "spp": 32,
+    "spp": 256,
     "parrallelism": 1,
     "path": "output.png"
   },
@@ -27,9 +27,10 @@
     "kingMaterial": "polished_metal",
 
     "lightPosition": [0, 200, 0],
+    "lightBrightness": 3.0,
+
     "wallMaterial": "polished_metal",
     "floorMaterial": "polished_metal",
     "floor_isTextured": false
   }
 }
-
