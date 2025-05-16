@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
     int num_rows = 7;
     float left_x = -559;
     float right_x = 160;
-    float z_start = -556;
+    float z_start = -200;
     float z_spacing = -356;
     for (int i = 0; i < num_rows; ++i) {
         float z = z_start + i * z_spacing;
