@@ -35,12 +35,6 @@ int main(int argc, char **argv) {
     polished_metal->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
     materials["polished_metal"] = polished_metal;
 
-    Material *light = new Material(
-        ROUGH_CONDUCTOR,
-        (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
-         15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
-         18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
-
     int w = 384, h = 384;
     Vector3f camPos(278, 273, -800);
     Vector3f camTarget(278, 273, 0);
@@ -61,6 +55,7 @@ int main(int argc, char **argv) {
 
     Material* wallMaterial = materials["blue_glass"];
     Material* floorMaterial = materials["blue_glass"];
+    float brightness_scale = 1.0f;
 
     //  Reading configuration file
     std::ifstream confJson("conf.json");
@@ -151,6 +146,9 @@ int main(int argc, char **argv) {
                                        confScene["lightPosition"][1],
                                        confScene["lightPosition"][2]);
             }
+            if (confScene["lightBrightness"].is_number_float()) {
+                brightness_scale = confScene["lightBrightness"];
+            }
             if(confScene["floorMaterial"].is_string()) {
                 floorMaterial = materials[confScene["floorMaterial"]];
             }
@@ -180,10 +178,16 @@ int main(int argc, char **argv) {
     MeshTriangle soldier_3("../models/soldier_zoom_12_final.obj", soldiers[2].second, soldiers[2].first);
     MeshTriangle soldier_4("../models/soldier_zoom_12_final.obj", soldiers[3].second, soldiers[3].first);
     
-    MeshTriangle wall("../models/backwall.obj", wallMaterial, Vector3f::Zero());
-    MeshTriangle light_("../models/light.obj", light, lightPosition);
-    MeshTriangle floor("../models/bottom.obj", floorMaterial, Vector3f::Zero());
     MeshTriangle king("../models/king_zoom_12_final.obj", kingMaterial, kingPosition);
+    MeshTriangle wall("../models/backwall.obj", wallMaterial, Vector3f::Zero());
+    MeshTriangle floor("../models/bottom.obj", floorMaterial, Vector3f::Zero());
+
+    Material *light = new Material(
+        ROUGH_CONDUCTOR,
+        brightness_scale * (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
+         15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
+         18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
+    MeshTriangle light_("../models/light.obj", light, lightPosition);
 
     //  Scene building
     scene.Add(&wall);
