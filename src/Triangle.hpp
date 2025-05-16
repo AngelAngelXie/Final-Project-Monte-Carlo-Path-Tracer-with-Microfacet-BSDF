@@ -68,14 +68,14 @@ class Triangle : public Object {
     }
     Vector3f evalDiffuseColor(const Vector2f &) const override;
     Bounds3 getBounds() override;
-    void Sample(Intersection &pos, float &pdf) {
+    void Sample(Intersection &pos, float &pdf) override {
         float x = std::sqrt(get_random_float()), y = get_random_float();
         pos.coords = v0 * (1.0f - x) + v1 * (x * (1.0f - y)) + v2 * (x * y);
         pos.normal = this->normal;
         pdf = 1.0f / area;
     }
-    float getArea() { return area; }
-    bool hasEmit() { return m->hasEmission(); }
+    float getArea() override { return area; }
+    bool hasEmit() override { return m->hasEmission(); }
 };
 
 class MeshTriangle : public Object {
@@ -96,7 +96,6 @@ class MeshTriangle : public Object {
         Vector3f max_vert = Vector3f{-std::numeric_limits<float>::infinity(),
                                      -std::numeric_limits<float>::infinity(),
                                      -std::numeric_limits<float>::infinity()};
-
         for (int i = 0; i < mesh.Vertices.size(); i += 3) {
             std::array<Vector3f, 3> face_vertices;
 
@@ -121,7 +120,6 @@ class MeshTriangle : public Object {
                 tri.t2 = Vector2f(mesh.Vertices[i + 2].TextureCoordinate.X,
                                   mesh.Vertices[i + 2].TextureCoordinate.Y);
             }
-
             triangles.emplace_back(tri); // Use emplace_back with temp tri
         }
 
