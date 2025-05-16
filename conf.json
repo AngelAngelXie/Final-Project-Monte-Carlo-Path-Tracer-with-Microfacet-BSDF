@@ -1,8 +1,8 @@
 {
   "_": "Example configuration file",
   "camera": {
-    "width": 384,
-    "height": 384,
+    "width": 256,
+    "height": 256,
     "fov": 45,
     "position": [278, 150, -1000],
     "target": [278, 0, 0],
@@ -12,7 +12,7 @@
     "apertureRadius": 5
   },
   "renderer": {
-    "spp": 256,
+    "spp": 32,
     "parrallelism": 1,
     "path": "output.png"
   },
