@@ -60,9 +60,8 @@ float Scene::directLighting(const Vector3f &wo, const Intersection &surf_inter,
     Vector2f uv = surf_inter.tcoords;
     float l_dir = 0;
     float pdf;
-    int n_dir_sample = 4;
     Intersection inter;
-    for (int i = 0; i < n_dir_sample; i++) {
+    for (int i = 0; i < this->n_dir_sample; i++) {
         sampleLight(inter, pdf);
         auto p_light = inter.coords;
         auto n_light = inter.normal;
@@ -71,10 +70,10 @@ float Scene::directLighting(const Vector3f &wo, const Intersection &surf_inter,
         auto dist = (p_light - p).norm();
         Ray rlight(p, ws);
         inter = intersect(rlight);
-        if (inter.happened && std::abs(inter.distance - dist) < EPSILON) {
+        if ((this->enable_shadow==false) || (inter.happened && std::abs(inter.distance - dist) < EPSILON)) {
             l_dir += emit * m->eval(ws, wo, n, wavelen, uv, isReflect) *
                      (ws.dot(n)) * (-ws).dot(n_light) / (dist * dist) / pdf /
-                     n_dir_sample;
+                     this->n_dir_sample;
         }
     }
     return l_dir;

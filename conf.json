@@ -17,6 +17,8 @@
     "path": "output.png"
   },
   "scene": {
+    "includeShadow": false,
+    "directLightSample": 32,
     "RussianRouletteRate": 0.7,
     "backgroundColor": [0.235294, 0.67451, 0.843137],
 

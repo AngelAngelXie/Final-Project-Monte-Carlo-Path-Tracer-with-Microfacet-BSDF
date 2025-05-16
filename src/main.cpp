@@ -109,6 +109,9 @@ int main(int argc, char **argv) {
 
         auto confScene = data["scene"];
         if (!confScene.is_null()) {
+            if (confScene["includeShadow"].is_boolean()) {
+                scene.enableShadow(confScene["includeShadow"]);
+            }
             if (confScene["RussianRouletteRate"].is_number()) {
                 scene.setRrRate(confScene["RussianRouletteRate"]);
             }
