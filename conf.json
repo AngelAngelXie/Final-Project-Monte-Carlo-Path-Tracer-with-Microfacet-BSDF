@@ -1,10 +1,10 @@
 {
   "_": "Example configuration file",
   "camera": {
-    "width": 384,
-    "height": 384,
+    "width": 512,
+    "height": 512,
     "fov": 45,
-    "position": [278, 150, -1000],
+    "position": [278, 50, -1200],
     "target": [278, 0, 0],
     "up": [0, 1, 0],
     "useDOF": false,
@@ -12,12 +12,24 @@
     "apertureRadius": 5
   },
   "renderer": {
-    "spp": 256,
+    "spp": 32,
     "parrallelism": 1,
     "path": "output.png"
   },
   "scene": {
     "RussianRouletteRate": 0.7,
-    "backgroundColor": [0.235294, 0.67451, 0.843137]
+    "backgroundColor": [0.235294, 0.67451, 0.843137],
+
+    "soldierPositions": [[140, 0, -50], [-456, 0, -50], [-570, 0, -400], [180, 0, -400]],
+    "soldierMaterials": ["polished_metal","polished_metal","polished_metal","polished_metal"],
+
+    "kingPosition": [0,0,0],
+    "kingMaterial": "polished_metal",
+
+    "lightPosition": [0, 200, 0],
+    "wallMaterial": "polished_metal",
+    "floorMaterial": "polished_metal",
+    "floor_isTextured": false
   }
 }
+
