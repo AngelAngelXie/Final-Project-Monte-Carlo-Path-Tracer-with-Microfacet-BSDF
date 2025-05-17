@@ -25,86 +25,45 @@ int main(int argc, char **argv) {
     Vector3f camTarget(278, 273, 0);
     Vector3f camUp(0, 1, 0);
 
-#ifdef DEMO
-    Material *red = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
-    red->base_reflectance = Vector3f(0.63f, 0.065f, 0.05f);
-    Material *green = new Material(SMOOTH_CONDUCTOR, Vector3f::Zero());
-    green->base_reflectance = Vector3f(0.14f, 0.45f, 0.091f);
-    Material *blue = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
-    blue->base_reflectance = Vector3f(0.14f, 0.091f, .45f);
-    Material *white = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
-    white->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
-    Material *white_plas = new Material(ROUGH_DIELECTRIC, Vector3f::Zero());
-    white_plas->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
-    Material *white_glas = new Material(SMOOTH_DIELECTRIC, Vector3f::Zero());
-    Material *light = new Material(
-        ROUGH_CONDUCTOR,
-        (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
-         15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
-         18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
-    
-    MeshTriangle floor("../models/cornellbox/floor.obj", white);
-    MeshTriangle shortbox("../models/cornellbox/shortbox.obj", blue);
-    MeshTriangle tallbox("../models/cornellbox/tallbox.obj", white_plas);
-    MeshTriangle left("../models/cornellbox/left.obj", red);
-    MeshTriangle right("../models/cornellbox/right.obj", green);
-    MeshTriangle light_("../models/cornellbox/light.obj", light);
-
-    Sphere sphere({400, 90, 130}, 70, white_glas);
-
-    scene.Add(&floor);
-    scene.Add(&shortbox);
-    scene.Add(&tallbox);
-    scene.Add(&left);
-    scene.Add(&right);
-    scene.Add(&light_);
-    scene.Add(&sphere);
-#else
-    // =================================================================================
-    // =================================================================================
-    // ====================START OF FINAL PRODUCT SCENE CONSTRUCTION====================
-    // (controled by conf.json file located under the root directory)
-
     // define some materials
     std::unordered_map<std::string, Material*> materials;
 
     // rough red metal
     Material *rough_red_conductor = new Material(ROUGH_CONDUCTOR, Vector3f(0, 0, 0));
-    rough_red_conductor->roughness = 0.02f;
+    rough_red_conductor->roughness = 0.1f;
     rough_red_conductor->base_reflectance = Vector3f(1.0f, 0.0f, 0.0f);
     materials["rough_red_conductor"] = rough_red_conductor;
 
+    // rough white metal
+    Material *rough_white_conductor = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
+    rough_white_conductor->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
+    rough_white_conductor->roughness = 0.4f;
+    materials["rough_white_conductor"] = rough_white_conductor;
+
+    // green mirror
+    Material *green_mirror = new Material(ROUGH_CONDUCTOR, Vector3f(0, 0, 0));
+    green_mirror->roughness = 0.01f;
+    green_mirror->base_reflectance = Vector3f(0.14f, 1.0f, 0.14f);
+    materials["green_mirror"] = green_mirror;
+
     // reflexive gold
     Material *gold_conductor = new Material(SMOOTH_CONDUCTOR, Vector3f(0, 0, 0));
-    gold_conductor->roughness = 0.001f;
+    gold_conductor->roughness = 0.0001f;
     gold_conductor->base_reflectance = Vector3f(1.0f, 0.85f, 0.57f);
     materials["gold_conductor"] = gold_conductor;
 
     // silver mirror
     Material *silver_mirror = new Material(SMOOTH_CONDUCTOR, Vector3f(0, 0, 0));
-    silver_mirror->roughness = 0.01f;                                    // Very smooth
+    silver_mirror->roughness = 0.001f;                                    // Very smooth
     silver_mirror->base_reflectance = Vector3f(0.972f, 0.960f, 0.915f);  // Silver (very reflective)
     materials["silver_mirror"] = silver_mirror;
-
-    // green mirror
-    Material *green_mirror = new Material(SMOOTH_CONDUCTOR, Vector3f(0, 0, 0));
-    green_mirror->roughness = 0.001f;
-    green_mirror->base_reflectance = Vector3f(0.14f, 1.0f, 0.14f);
-    materials["grean_mirror"] = green_mirror;
 
     // smooth glass
     Material *smooth_glass = new Material(SMOOTH_DIELECTRIC, Vector3f(0, 0, 0));
     smooth_glass->iorA = 1.0f;
-    smooth_glass->iorB = 1.5f;
+    smooth_glass->iorB = 2.0f;
     smooth_glass->roughness = 0.01f;
     materials["smooth_glass"] = smooth_glass;
-
-    // frosted glass
-    Material *frosted_glass = new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
-    frosted_glass->iorA = 1.0f;
-    frosted_glass->iorB = 1.51f;
-    frosted_glass->roughness = 0.2f;
-    materials["frosted_glass"] = frosted_glass;
 
     // rough plastic
     Material *rough_plastic = new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
@@ -112,6 +71,44 @@ int main(int argc, char **argv) {
     rough_plastic->iorB = 1.7f;
     rough_plastic->roughness = 0.5f;
     materials["rough_plastic"] = rough_plastic;
+
+#ifdef DEMO
+    Material *light = new Material(
+        ROUGH_CONDUCTOR,
+        (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
+        15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
+        18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
+    
+    MeshTriangle light_("../models/cornellbox/light.obj", light);
+    MeshTriangle back("../models/cornellbox/floor.obj", rough_white_conductor);
+    MeshTriangle ground("../models/bottom.obj", rough_white_conductor);
+    MeshTriangle left("../models/cornellbox/left.obj", rough_red_conductor);
+    MeshTriangle right("../models/cornellbox/right.obj", gold_conductor);
+
+    MeshTriangle shortbox("../models/cornellbox/shortbox.obj", green_mirror);
+    MeshTriangle tallbox("../models/cornellbox/tallbox.obj", rough_plastic);
+    Sphere big_sphere({400, 90, 3}, 70, smooth_glass);
+    Sphere small_sphere({120, 390, 400}, 50, silver_mirror);
+
+
+    scene.Add(&back);
+    scene.Add(&ground);
+    scene.Add(&shortbox);
+    scene.Add(&tallbox);
+    scene.Add(&left);
+    scene.Add(&right);
+    scene.Add(&light_);
+    scene.Add(&big_sphere);
+    scene.Add(&small_sphere);
+
+    // camera.useDOF = true;
+    // camera.focal_distance = 900;
+    // camera.aperture_radius = 40;
+#else
+    // =================================================================================
+    // =================================================================================
+    // ====================START OF FINAL PRODUCT SCENE CONSTRUCTION====================
+    // (controled by conf.json file located under the root directory)
 
     // default settings
     Vector3f kingPosition = Vector3f(0.0f, 0.0f, 0.0f);

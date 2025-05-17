@@ -22,10 +22,10 @@
     "RussianRouletteRate": 0.7,
     "backgroundColor": [0.235294, 0.67451, 0.843137],
 
-    "_": "material options are: rough_red_conductor, gold_conductor, silver_mirror, green_mirror, smooth_glass, frosted_glass, rough_plastic.",
+    "_": "material options are: rough_red_conductor, gold_conductor, silver_mirror, green_mirror, smooth_glass, rough_plastic.",
 
     "soldierPositions": [[140, 0, -50], [-456, 0, -50], [-570, 0, -400], [180, 0, -400]],
-    "soldierMaterials": ["green_mirror","rough_red_conductor","frosted_glass","frosted_glass"],
+    "soldierMaterials": ["green_mirror","rough_red_conductor","green_mirror","green_mirror"],
 
     "kingPosition": [0,0,0],
     "kingMaterial": "gold_conductor",
