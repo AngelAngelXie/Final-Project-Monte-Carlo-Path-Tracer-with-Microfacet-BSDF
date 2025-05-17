@@ -2,6 +2,7 @@
 #include "Renderer.hpp"
 #include "Scene.hpp"
 #include "Triangle.hpp"
+#include "Sphere.hpp"
 #include "json.hpp"
 #include <chrono>
 
@@ -18,6 +19,51 @@ int main(int argc, char **argv) {
     Camera camera;
     Scene scene(camera);
     Renderer r;
+
+    int w = 384, h = 384;
+    Vector3f camPos(278, 273, -800);
+    Vector3f camTarget(278, 273, 0);
+    Vector3f camUp(0, 1, 0);
+
+#ifdef DEMO
+    Material *red = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
+    red->base_reflectance = Vector3f(0.63f, 0.065f, 0.05f);
+    Material *green = new Material(SMOOTH_CONDUCTOR, Vector3f::Zero());
+    green->base_reflectance = Vector3f(0.14f, 0.45f, 0.091f);
+    Material *blue = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
+    blue->base_reflectance = Vector3f(0.14f, 0.091f, .45f);
+    Material *white = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
+    white->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
+    Material *white_plas = new Material(ROUGH_DIELECTRIC, Vector3f::Zero());
+    white_plas->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
+    Material *white_glas = new Material(SMOOTH_DIELECTRIC, Vector3f::Zero());
+    Material *light = new Material(
+        ROUGH_CONDUCTOR,
+        (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
+         15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
+         18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
+    
+    MeshTriangle floor("../models/cornellbox/floor.obj", white);
+    MeshTriangle shortbox("../models/cornellbox/shortbox.obj", blue);
+    MeshTriangle tallbox("../models/cornellbox/tallbox.obj", white_plas);
+    MeshTriangle left("../models/cornellbox/left.obj", red);
+    MeshTriangle right("../models/cornellbox/right.obj", green);
+    MeshTriangle light_("../models/cornellbox/light.obj", light);
+
+    Sphere sphere({400, 90, 130}, 70, white_glas);
+
+    scene.Add(&floor);
+    scene.Add(&shortbox);
+    scene.Add(&tallbox);
+    scene.Add(&left);
+    scene.Add(&right);
+    scene.Add(&light_);
+    scene.Add(&sphere);
+#else
+    // =================================================================================
+    // =================================================================================
+    // ====================START OF FINAL PRODUCT SCENE CONSTRUCTION====================
+    // (controled by conf.json file located under the root directory)
 
     // define some materials
     std::unordered_map<std::string, Material*> materials;
@@ -66,11 +112,6 @@ int main(int argc, char **argv) {
     rough_plastic->iorB = 1.7f;
     rough_plastic->roughness = 0.5f;
     materials["rough_plastic"] = rough_plastic;
-
-    int w = 384, h = 384;
-    Vector3f camPos(278, 273, -800);
-    Vector3f camTarget(278, 273, 0);
-    Vector3f camUp(0, 1, 0);
 
     // default settings
     Vector3f kingPosition = Vector3f(0.0f, 0.0f, 0.0f);
@@ -197,13 +238,6 @@ int main(int argc, char **argv) {
                   << std::endl;
     }
 
-    camera.width = w;
-    camera.height = h;
-    camera.position = camPos;
-    camera.lookAt(camTarget, camUp);
-    // Change the definition here to change resolution
-    scene.camera = camera;
-
     if (soldiers.size() < 4) {
         std::cerr << "Error: Need at least 4 soldiers in JSON config" << std::endl;
         exit(EXIT_FAILURE);
@@ -233,6 +267,17 @@ int main(int argc, char **argv) {
     scene.Add(&soldier_3);
     scene.Add(&soldier_4);
     scene.Add(&king);
+
+    // =====================END OF FINAL PRODUCT SCENE CONSTRUCTION=====================
+    // =================================================================================
+    // =================================================================================
+#endif
+
+    camera.width = w;
+    camera.height = h;
+    camera.position = camPos;
+    camera.lookAt(camTarget, camUp);
+    scene.camera = camera;
 
     scene.buildBVH();
 
