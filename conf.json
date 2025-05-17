@@ -22,11 +22,11 @@
     "RussianRouletteRate": 0.7,
     "backgroundColor": [0.235294, 0.67451, 0.843137],
 
-    "soldierPositions": [[140, 0, -50], [-456, 0, -50], [-570, 0, -400], [180, 0, -400]],
+    "soldierPositions": [[140, 0, -150], [-456, 0, -150], [-570, 0, -500], [180, 0, -500]],
     "soldierMaterials": ["polished_metal","polished_metal","polished_metal","polished_metal"],
 
     "kingPosition": [0,0,0],
-    "kingMaterial": "polished_metal",
+    "kingMaterial": "gold_conductor",
 
     "lightPosition": [0, 200, 0],
     "lightBrightness": 3.0,

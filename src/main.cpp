@@ -22,18 +22,50 @@ int main(int argc, char **argv) {
     // define some materials
     std::unordered_map<std::string, Material*> materials;
 
-    Material *blue_glass = new Material(SMOOTH_DIELECTRIC, Vector3f(0, 0, 0));
-    blue_glass->m_color = Vector3f(0.2f, 0.4f, 1.0f);
-    blue_glass->iorA = 1.0f;
-    blue_glass->iorB = 1.5f;
-    blue_glass->roughness = 0.01f;
-    blue_glass->base_reflectance = Vector3f(0.04f, 0.04f, 0.04f);
-    materials["blue_glass"] = blue_glass;
+    // rough red metal
+    Material *rough_red_conductor = new Material(ROUGH_CONDUCTOR, Vector3f(0, 0, 0));
+    rough_red_conductor->roughness = 0.02f;
+    rough_red_conductor->base_reflectance = Vector3f(1.0f, 0.0f, 0.0f);
+    materials["rough_red_conductor"] = rough_red_conductor;
 
-    // POLISHED METAL
-    Material *polished_metal = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
-    polished_metal->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
-    materials["polished_metal"] = polished_metal;
+    // reflexive gold
+    Material *gold_conductor = new Material(SMOOTH_CONDUCTOR, Vector3f(0, 0, 0));
+    gold_conductor->roughness = 0.001f;
+    gold_conductor->base_reflectance = Vector3f(1.0f, 0.85f, 0.57f);
+    materials["gold_conductor"] = gold_conductor;
+
+    // silver mirror
+    Material *silver_mirror = new Material(SMOOTH_CONDUCTOR, Vector3f(0, 0, 0));
+    silver_mirror->roughness = 0.01f;                                    // Very smooth
+    silver_mirror->base_reflectance = Vector3f(0.972f, 0.960f, 0.915f);  // Silver (very reflective)
+    materials["silver_mirror"] = silver_mirror;
+
+    // green mirror
+    Material *green_mirror = new Material(SMOOTH_CONDUCTOR, Vector3f(0, 0, 0));
+    green_mirror->roughness = 0.001f;
+    green_mirror->base_reflectance = Vector3f(0.14f, 1.0f, 0.14f);
+    materials["grean_mirror"] = green_mirror;
+
+    // smooth glass
+    Material *smooth_glass = new Material(SMOOTH_DIELECTRIC, Vector3f(0, 0, 0));
+    smooth_glass->iorA = 1.0f;
+    smooth_glass->iorB = 1.5f;
+    smooth_glass->roughness = 0.01f;
+    materials["smooth_glass"] = smooth_glass;
+
+    // frosted glass
+    Material *frosted_glass = new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
+    frosted_glass->iorA = 1.0f;
+    frosted_glass->iorB = 1.51f;
+    frosted_glass->roughness = 0.2f;
+    materials["frosted_glass"] = frosted_glass;
+
+    // rough plastic
+    Material *rough_plastic = new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
+    rough_plastic->iorA = 1.0f;
+    rough_plastic->iorB = 1.7f;
+    rough_plastic->roughness = 0.5f;
+    materials["rough_plastic"] = rough_plastic;
 
     int w = 384, h = 384;
     Vector3f camPos(278, 273, -800);
@@ -42,19 +74,19 @@ int main(int argc, char **argv) {
 
     // default settings
     Vector3f kingPosition = Vector3f(0.0f, 0.0f, 0.0f);
-    Material* kingMaterial = materials["blue_glass"];
+    Material* kingMaterial = materials["rough_plastic"];
 
     std::vector<std::pair<Vector3f, Material*>> soldiers = {
-        {Vector3f(140, 0, -50), materials["blue_glass"]},
-        {Vector3f(-456, 0, -50), materials["blue_glass"]},
-        {Vector3f(-570, 0, -400), materials["blue_glass"]},
-        {Vector3f(180, 0, -400), materials["blue_glass"]}
+        {Vector3f(140, 0, -50), materials["rough_plastic"]},
+        {Vector3f(-456, 0, -50), materials["rough_plastic"]},
+        {Vector3f(-570, 0, -400), materials["rough_plastic"]},
+        {Vector3f(180, 0, -400), materials["rough_plastic"]}
     };
 
     Vector3f lightPosition = Vector3f(0, 200, 0);
 
-    Material* wallMaterial = materials["blue_glass"];
-    Material* floorMaterial = materials["blue_glass"];
+    Material* wallMaterial = materials["rough_plastic"];
+    Material* floorMaterial = materials["rough_plastic"];
     float brightness_scale = 1.0f;
 
     //  Reading configuration file
@@ -139,7 +171,7 @@ int main(int argc, char **argv) {
                     const auto& pos = positions[i];
                     Vector3f position(pos[0], pos[1], pos[2]);
                     std::string matName = matNames[i];
-                    Material* material = materials.count(matName) ? materials.at(matName) : materials["polished_metal"];
+                    Material* material = materials.count(matName) ? materials.at(matName) : materials["rough_plastic"];
                     soldiers.push_back(std::make_pair(position, material));
                 }
             }
