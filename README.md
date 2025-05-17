@@ -5,7 +5,11 @@ Junhao Liu(u7778766), Qingchuan Rui(u7776331), Jiaxin Xie(u8153316), Jinghang Li
 
 # Monte Carlo Path Tracer with Microfacet BSDF
 
-output image to be added ...
+Demo image using 7 pre-defined material types (left). Demo image with depth of field applied (right).
+
+<img width="467" alt="demo_original" src="https://github.com/user-attachments/assets/0c92e1f7-ad3f-47f5-9b21-7dc7b879176e" />
+<img width="467" alt="demo_dof" src="https://github.com/user-attachments/assets/3a2e464f-f3ec-4a91-a88e-23baeb374579" />
+
 
 ## Project Description
 
