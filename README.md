@@ -42,5 +42,5 @@ mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=RELEASE
 
 # Build options:
-make -DEMO=1    # Build with demo mode (material testing)
+make DEMO=1    # Build with demo mode (material testing)
 make            # Build for final scene (chessboard)
