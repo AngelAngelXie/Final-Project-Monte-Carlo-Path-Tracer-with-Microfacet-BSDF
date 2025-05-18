@@ -88,40 +88,40 @@ int main(int argc, char **argv) {
     rough_plastic->roughness = 0.4f;
     materials["rough_plastic"] = rough_plastic;
 
-// #ifdef DEMO
-//     Material *light = new Material(
-//         ROUGH_CONDUCTOR,
-//         (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
-//          15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
-//          18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
+#ifdef DEMO
+    Material *light = new Material(
+        ROUGH_CONDUCTOR,
+        (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
+         15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
+         18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
 
-//     MeshTriangle light_("../models/cornellbox/light.obj", light);
-//     MeshTriangle back("../models/cornellbox/floor.obj", rough_white_conductor);
-//     MeshTriangle ground("../models/bottom.obj", rough_white_conductor);
-//     MeshTriangle left("../models/cornellbox/left.obj", rough_red_conductor);
-//     MeshTriangle right("../models/cornellbox/right.obj", gold_conductor);
+    MeshTriangle light_("../models/cornellbox/light.obj", light);
+    MeshTriangle back("../models/cornellbox/floor.obj", rough_white_conductor);
+    MeshTriangle ground("../models/bottom.obj", rough_white_conductor);
+    MeshTriangle left("../models/cornellbox/left.obj", rough_red_conductor);
+    MeshTriangle right("../models/cornellbox/right.obj", gold_conductor);
 
-//     MeshTriangle shortbox("../models/cornellbox/shortbox.obj", green_mirror);
-//     MeshTriangle tallbox("../models/cornellbox/tallbox.obj", rough_plastic);
-//     Sphere big_sphere({400, 90, 3}, 80, smooth_glass);
-//     Sphere mid_sphere({250, 260, 230}, 60, clear_rough_plastic);
-//     Sphere small_sphere({120, 390, 400}, 50, silver_mirror);
+    MeshTriangle shortbox("../models/cornellbox/shortbox.obj", green_mirror);
+    MeshTriangle tallbox("../models/cornellbox/tallbox.obj", rough_plastic);
+    Sphere big_sphere({400, 90, 3}, 80, smooth_glass);
+    Sphere mid_sphere({250, 260, 230}, 60, clear_rough_plastic);
+    Sphere small_sphere({120, 390, 400}, 50, silver_mirror);
 
-//     scene.Add(&back);
-//     scene.Add(&ground);
-//     scene.Add(&shortbox);
-//     scene.Add(&tallbox);
-//     scene.Add(&left);
-//     scene.Add(&right);
-//     scene.Add(&light_);
-//     scene.Add(&big_sphere);
-//     scene.Add(&mid_sphere);
-//     scene.Add(&small_sphere);
+    scene.Add(&back);
+    scene.Add(&ground);
+    scene.Add(&shortbox);
+    scene.Add(&tallbox);
+    scene.Add(&left);
+    scene.Add(&right);
+    scene.Add(&light_);
+    scene.Add(&big_sphere);
+    scene.Add(&mid_sphere);
+    scene.Add(&small_sphere);
 
-//     camera.useDOF = true;
-//     camera.focal_distance = 900;
-//     camera.aperture_radius = 40;
-// #else
+    camera.useDOF = true;
+    camera.focal_distance = 900;
+    camera.aperture_radius = 40;
+#else
     // =================================================================================
     // =================================================================================
     // ====================START OF FINAL PRODUCT SCENE CONSTRUCTION==================== 
@@ -215,7 +215,8 @@ int main(int argc, char **argv) {
                 kingMaterial = materials[confScene["kingMaterial"]];
             }
 
-            if (confScene.contains("soldierLineUpPosition") &&
+            if (confScene.contains("soldierLeftRowPosition") &&
+                confScene.contains("soldierRightRowPosition") &&
                 confScene.contains("soldierMaterials")) {
                 
                 // extract starting soldier position on left & right
@@ -245,7 +246,7 @@ int main(int argc, char **argv) {
                         right_row_positions[2].get<float>() + z_offset
                     );
                     Material *left_material = (i < matNames.size()) ? materials[matNames[i]] : materials["rough_plastic"];
-                    Material *right_material = (i + soldier_count < matNames.size()) ? materials[matNames[i*2]] : materials["rough_plastic"];
+                    Material *right_material = ((i + soldier_count) < matNames.size()) ? materials[matNames[i+soldier_count]] : materials["rough_plastic"];
 
                     // create soldier pair mesh & add to scene
                     auto* soldier_left = new MeshTriangle(soldier_model, left_material, leftPos);
@@ -265,6 +266,7 @@ int main(int argc, char **argv) {
             }
             if (confScene["floorMaterial"].is_string()) {
                 floorMaterial = materials[confScene["floorMaterial"]];
+                floorMaterial->textured = confScene["floor_isTextured"];
             }
             if (confScene["wallMaterial"].is_string()) {
                 wallMaterial = materials[confScene["wallMaterial"]];
@@ -298,7 +300,7 @@ int main(int argc, char **argv) {
     // =====================END OF FINAL PRODUCT SCENE CONSTRUCTION=====================
     // =================================================================================
     // =================================================================================
-// #endif
+#endif
 
     camera.width = w;
     camera.height = h;

@@ -1,10 +1,10 @@
 {
   "_": "Example configuration file",
   "camera": {
-    "width": 325,
-    "height": 325,
+    "width": 930,
+    "height": 512,
     "fov": 45,
-    "position": [278, 50, -1200],
+    "position": [278, 150, -2550],
     "target": [278, 0, 0],
     "up": [0, 1, 0],
     "useDOF": false,
@@ -12,7 +12,7 @@
     "apertureRadius": 5
   },
   "renderer": {
-    "spp": 256,
+    "spp": 32,
     "parrallelism": 1,
     "path": "output.png"
   },
@@ -37,8 +37,8 @@
     "kingPosition": [0,0,0],
     "kingMaterial": "gold_conductor",
 
-    "lightPosition": [0, 200, 0],
-    "lightBrightness": 3.0,
+    "lightPosition": [0, 1200, 0],
+    "lightBrightness": 10.0,
 
     "wallMaterial": "smooth_glass",
     "floorMaterial": "rough_white_conductor",

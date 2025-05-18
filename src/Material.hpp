@@ -136,7 +136,6 @@ class Material {
         if (!textured) {
             return extract(wavelen, base_reflectance);
         }
-
         // Determine which column (stripe) and row
         int col = static_cast<int>((uv.x() - 0.05f) * 10);
         int row = static_cast<int>((uv.y() - 0.00f) * 12);
