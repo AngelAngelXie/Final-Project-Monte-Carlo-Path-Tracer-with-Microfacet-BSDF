@@ -65,6 +65,13 @@ int main(int argc, char **argv) {
     smooth_glass->roughness = 0.01f;
     materials["smooth_glass"] = smooth_glass;
 
+    // clear rough plastic
+    Material *clear_rough_plastic = new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
+    clear_rough_plastic->iorA = 1.0f;
+    clear_rough_plastic->iorB = 1.3f;
+    clear_rough_plastic->roughness = 0.01f;
+    materials["clear_rough_plastic"] = clear_rough_plastic;
+
     // rough plastic
     Material *rough_plastic = new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
     rough_plastic->iorA = 1.0f;
@@ -87,7 +94,8 @@ int main(int argc, char **argv) {
 
     MeshTriangle shortbox("../models/cornellbox/shortbox.obj", green_mirror);
     MeshTriangle tallbox("../models/cornellbox/tallbox.obj", rough_plastic);
-    Sphere big_sphere({400, 90, 3}, 70, smooth_glass);
+    Sphere big_sphere({400, 90, 3}, 80, smooth_glass);
+    Sphere mid_sphere({250, 260, 230}, 60, clear_rough_plastic);
     Sphere small_sphere({120, 390, 400}, 50, silver_mirror);
 
 
@@ -99,11 +107,12 @@ int main(int argc, char **argv) {
     scene.Add(&right);
     scene.Add(&light_);
     scene.Add(&big_sphere);
+    scene.Add(&mid_sphere);
     scene.Add(&small_sphere);
 
-    // camera.useDOF = true;
-    // camera.focal_distance = 900;
-    // camera.aperture_radius = 40;
+    camera.useDOF = true;
+    camera.focal_distance = 900;
+    camera.aperture_radius = 20;
 #else
     // =================================================================================
     // =================================================================================
