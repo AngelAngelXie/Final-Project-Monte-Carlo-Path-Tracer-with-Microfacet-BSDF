@@ -1,8 +1,8 @@
 #include "Material.hpp"
 #include "Renderer.hpp"
 #include "Scene.hpp"
-#include "Triangle.hpp"
 #include "Sphere.hpp"
+#include "Triangle.hpp"
 #include "json.hpp"
 #include <chrono>
 
@@ -26,16 +26,18 @@ int main(int argc, char **argv) {
     Vector3f camUp(0, 1, 0);
 
     // define some materials
-    std::unordered_map<std::string, Material*> materials;
+    std::unordered_map<std::string, Material *> materials;
 
     // rough red metal
-    Material *rough_red_conductor = new Material(ROUGH_CONDUCTOR, Vector3f(0, 0, 0));
+    Material *rough_red_conductor =
+        new Material(ROUGH_CONDUCTOR, Vector3f(0, 0, 0));
     rough_red_conductor->roughness = 0.1f;
     rough_red_conductor->base_reflectance = Vector3f(1.0f, 0.0f, 0.0f);
     materials["rough_red_conductor"] = rough_red_conductor;
 
     // rough white metal
-    Material *rough_white_conductor = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
+    Material *rough_white_conductor =
+        new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
     rough_white_conductor->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
     rough_white_conductor->roughness = 0.4f;
     materials["rough_white_conductor"] = rough_white_conductor;
@@ -47,45 +49,48 @@ int main(int argc, char **argv) {
     materials["green_mirror"] = green_mirror;
 
     // reflexive gold
-    Material *gold_conductor = new Material(SMOOTH_CONDUCTOR, Vector3f(0, 0, 0));
+    Material *gold_conductor =
+        new Material(SMOOTH_CONDUCTOR, Vector3f(0, 0, 0));
     gold_conductor->roughness = 0.0001f;
     gold_conductor->base_reflectance = Vector3f(1.0f, 0.85f, 0.57f);
     materials["gold_conductor"] = gold_conductor;
 
     // silver mirror
     Material *silver_mirror = new Material(SMOOTH_CONDUCTOR, Vector3f(0, 0, 0));
-    silver_mirror->roughness = 0.001f;                                    // Very smooth
-    silver_mirror->base_reflectance = Vector3f(0.972f, 0.960f, 0.915f);  // Silver (very reflective)
+    silver_mirror->roughness = 0.001f; // Very smooth
+    silver_mirror->base_reflectance =
+        Vector3f(0.972f, 0.960f, 0.915f); // Silver (very reflective)
     materials["silver_mirror"] = silver_mirror;
 
     // smooth glass
     Material *smooth_glass = new Material(SMOOTH_DIELECTRIC, Vector3f(0, 0, 0));
-    smooth_glass->iorA = 1.0f;
-    smooth_glass->iorB = 2.0f;
+    smooth_glass->iorA = 1.7f;
+    smooth_glass->iorB = 0.04f;
     smooth_glass->roughness = 0.01f;
     materials["smooth_glass"] = smooth_glass;
 
     // clear rough plastic
-    Material *clear_rough_plastic = new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
-    clear_rough_plastic->iorA = 1.0f;
-    clear_rough_plastic->iorB = 1.3f;
-    clear_rough_plastic->roughness = 0.01f;
+    Material *clear_rough_plastic =
+        new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
+    clear_rough_plastic->iorA = 1.5f;
+    smooth_glass->iorB = 0.01f;
+    clear_rough_plastic->roughness = 0.02f;
     materials["clear_rough_plastic"] = clear_rough_plastic;
 
     // rough plastic
     Material *rough_plastic = new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
-    rough_plastic->iorA = 1.0f;
-    rough_plastic->iorB = 1.7f;
-    rough_plastic->roughness = 0.5f;
+    rough_plastic->iorA = 1.5f;
+    smooth_glass->iorB = 0.01f;
+    rough_plastic->roughness = 0.4f;
     materials["rough_plastic"] = rough_plastic;
 
 #ifdef DEMO
     Material *light = new Material(
         ROUGH_CONDUCTOR,
         (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
-        15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
-        18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
-    
+         15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
+         18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
+
     MeshTriangle light_("../models/cornellbox/light.obj", light);
     MeshTriangle back("../models/cornellbox/floor.obj", rough_white_conductor);
     MeshTriangle ground("../models/bottom.obj", rough_white_conductor);
@@ -97,7 +102,6 @@ int main(int argc, char **argv) {
     Sphere big_sphere({400, 90, 3}, 80, smooth_glass);
     Sphere mid_sphere({250, 260, 230}, 60, clear_rough_plastic);
     Sphere small_sphere({120, 390, 400}, 50, silver_mirror);
-
 
     scene.Add(&back);
     scene.Add(&ground);
@@ -116,24 +120,24 @@ int main(int argc, char **argv) {
 #else
     // =================================================================================
     // =================================================================================
-    // ====================START OF FINAL PRODUCT SCENE CONSTRUCTION====================
-    // (controled by conf.json file located under the root directory)
+    // ====================START OF FINAL PRODUCT SCENE
+    // CONSTRUCTION==================== (controled by conf.json file located
+    // under the root directory)
 
     // default settings
     Vector3f kingPosition = Vector3f(0.0f, 0.0f, 0.0f);
-    Material* kingMaterial = materials["rough_plastic"];
+    Material *kingMaterial = materials["rough_plastic"];
 
-    std::vector<std::pair<Vector3f, Material*>> soldiers = {
+    std::vector<std::pair<Vector3f, Material *>> soldiers = {
         {Vector3f(140, 0, -50), materials["rough_plastic"]},
         {Vector3f(-456, 0, -50), materials["rough_plastic"]},
         {Vector3f(-570, 0, -400), materials["rough_plastic"]},
-        {Vector3f(180, 0, -400), materials["rough_plastic"]}
-    };
+        {Vector3f(180, 0, -400), materials["rough_plastic"]}};
 
     Vector3f lightPosition = Vector3f(0, 200, 0);
 
-    Material* wallMaterial = materials["rough_plastic"];
-    Material* floorMaterial = materials["rough_plastic"];
+    Material *wallMaterial = materials["rough_plastic"];
+    Material *floorMaterial = materials["rough_plastic"];
     float brightness_scale = 1.0f;
 
     //  Reading configuration file
@@ -209,32 +213,35 @@ int main(int argc, char **argv) {
             if (confScene["kingMaterial"].is_string()) {
                 kingMaterial = materials[confScene["kingMaterial"]];
             }
-            
-            if (confScene.contains("soldierPositions") && confScene.contains("soldierMaterials")) {
-                const auto& positions = confScene["soldierPositions"];
-                const auto& matNames = confScene["soldierMaterials"];
+
+            if (confScene.contains("soldierPositions") &&
+                confScene.contains("soldierMaterials")) {
+                const auto &positions = confScene["soldierPositions"];
+                const auto &matNames = confScene["soldierMaterials"];
                 soldiers.clear();
                 for (size_t i = 0; i < positions.size(); i++) {
-                    const auto& pos = positions[i];
+                    const auto &pos = positions[i];
                     Vector3f position(pos[0], pos[1], pos[2]);
                     std::string matName = matNames[i];
-                    Material* material = materials.count(matName) ? materials.at(matName) : materials["rough_plastic"];
+                    Material *material = materials.count(matName)
+                                             ? materials.at(matName)
+                                             : materials["rough_plastic"];
                     soldiers.push_back(std::make_pair(position, material));
                 }
             }
 
             if (is_v3(confScene["lightPosition"])) {
-               lightPosition = Vector3f(confScene["lightPosition"][0],
-                                       confScene["lightPosition"][1],
-                                       confScene["lightPosition"][2]);
+                lightPosition = Vector3f(confScene["lightPosition"][0],
+                                         confScene["lightPosition"][1],
+                                         confScene["lightPosition"][2]);
             }
             if (confScene["lightBrightness"].is_number_float()) {
                 brightness_scale = confScene["lightBrightness"];
             }
-            if(confScene["floorMaterial"].is_string()) {
+            if (confScene["floorMaterial"].is_string()) {
                 floorMaterial = materials[confScene["floorMaterial"]];
             }
-            if(confScene["wallMaterial"].is_string()) {
+            if (confScene["wallMaterial"].is_string()) {
                 wallMaterial = materials[confScene["wallMaterial"]];
             }
         }
@@ -245,23 +252,30 @@ int main(int argc, char **argv) {
     }
 
     if (soldiers.size() < 4) {
-        std::cerr << "Error: Need at least 4 soldiers in JSON config" << std::endl;
+        std::cerr << "Error: Need at least 4 soldiers in JSON config"
+                  << std::endl;
         exit(EXIT_FAILURE);
     }
-    MeshTriangle soldier_1("../models/soldier_zoom_12_final.obj", soldiers[0].second, soldiers[0].first);
-    MeshTriangle soldier_2("../models/soldier_zoom_12_final.obj", soldiers[1].second, soldiers[1].first);
-    MeshTriangle soldier_3("../models/soldier_zoom_12_final.obj", soldiers[2].second, soldiers[2].first);
-    MeshTriangle soldier_4("../models/soldier_zoom_12_final.obj", soldiers[3].second, soldiers[3].first);
-    
-    MeshTriangle king("../models/king_zoom_12_final.obj", kingMaterial, kingPosition);
+    MeshTriangle soldier_1("../models/soldier_zoom_12_final.obj",
+                           soldiers[0].second, soldiers[0].first);
+    MeshTriangle soldier_2("../models/soldier_zoom_12_final.obj",
+                           soldiers[1].second, soldiers[1].first);
+    MeshTriangle soldier_3("../models/soldier_zoom_12_final.obj",
+                           soldiers[2].second, soldiers[2].first);
+    MeshTriangle soldier_4("../models/soldier_zoom_12_final.obj",
+                           soldiers[3].second, soldiers[3].first);
+
+    MeshTriangle king("../models/king_zoom_12_final.obj", kingMaterial,
+                      kingPosition);
     MeshTriangle wall("../models/backwall.obj", wallMaterial, Vector3f::Zero());
     MeshTriangle floor("../models/bottom.obj", floorMaterial, Vector3f::Zero());
 
     Material *light = new Material(
         ROUGH_CONDUCTOR,
-        brightness_scale * (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
-         15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
-         18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
+        brightness_scale *
+            (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
+             15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
+             18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
     MeshTriangle light_("../models/light.obj", light, lightPosition);
 
     //  Scene building
@@ -274,7 +288,8 @@ int main(int argc, char **argv) {
     scene.Add(&soldier_4);
     scene.Add(&king);
 
-    // =====================END OF FINAL PRODUCT SCENE CONSTRUCTION=====================
+    // =====================END OF FINAL PRODUCT SCENE
+    // CONSTRUCTION=====================
     // =================================================================================
     // =================================================================================
 #endif
