@@ -70,7 +70,8 @@ float Scene::directLighting(const Vector3f &wo, const Intersection &surf_inter,
         auto dist = (p_light - p).norm();
         Ray rlight(p, ws);
         inter = intersect(rlight);
-        if ((this->enable_shadow==false) || (inter.happened && std::abs(inter.distance - dist) < EPSILON)) {
+        if ((this->enable_shadow == false) ||
+            (inter.happened && std::abs(inter.distance - dist) < EPSILON)) {
             l_dir += emit * m->eval(ws, wo, n, wavelen, uv, isReflect) *
                      (ws.dot(n)) * (-ws).dot(n_light) / (dist * dist) / pdf /
                      this->n_dir_sample;
@@ -101,8 +102,16 @@ float Scene::castRay(const Ray &ray, int depth,
 
     auto mfn = m->sample(wo, n); //  microfacet normal
     float kr = m->fresnel(ray.direction, mfn, wavelen);
-
     float l_dir = 0, l_ind = 0;
+
+    //  Direct lighting
+    inter.coords += n * EPSILON;
+    if (wo.dot(n) < 0) { //  inner reflection
+        l_dir = (1. - kr) * directLighting(wo, inter, wavelen, false);
+    } else { //  only calc direct lighting when ray is outside
+        l_dir = kr * directLighting(wo, inter, wavelen, true);
+    }
+
     float rr = get_random_float();
     float rd_flect = get_random_float();
     if (rd_flect < kr) {
@@ -110,8 +119,6 @@ float Scene::castRay(const Ray &ray, int depth,
             p -= n * EPSILON;
         } else { //  only calc direct lighting when ray is outside
             p += n * EPSILON;
-            inter.coords += n * EPSILON;
-            l_dir = directLighting(wo, inter, wavelen, true);
         }
         if (rr >= this->rrRate) {
             return l_dir;
@@ -133,8 +140,6 @@ float Scene::castRay(const Ray &ray, int depth,
     } else {
         if (wo.dot(mfn) < 0) { //  in-out refraction
             p += n * EPSILON;
-            inter.coords += n * EPSILON;
-            l_dir = directLighting(wo, inter, wavelen, false);
         } else {
             p -= n * EPSILON;
         }
@@ -158,7 +163,8 @@ float Scene::castRay(const Ray &ray, int depth,
     }
 
     //  use clamp to avoid fireflies
-    float threshold_ind = 5;
+    float threshold_ind = 5, threshold_dir = 15;
     l_ind = clamp(0, threshold_ind, l_ind);
+    l_dir = clamp(0, threshold_dir, l_dir);
     return l_dir + l_ind;
 }
