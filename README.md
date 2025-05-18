@@ -6,9 +6,8 @@ Junhao Liu(u7778766), Qingchuan Rui(u7776331), Jiaxin Xie(u8153316), Jinghang Li
 # Monte Carlo Path Tracer with Microfacet BSDF
 
 Demo image using 8 pre-defined material types (left). Demo image with depth of field applied (right).
+<img width="767" alt="demo" src="https://github.com/user-attachments/assets/639f76d2-f49d-4f89-b7f5-c21cf826b853" />
 
-<img width="450" alt="demo_original" src="https://github.com/user-attachments/assets/023db13b-9baa-446a-a1f0-5f43750074a3" />
-<img width="450" alt="demo_dof" src="https://github.com/user-attachments/assets/1e4cf9e2-4fd3-4d81-88d6-cf735506b173" />
 
 ## Project Description
 
@@ -40,6 +39,8 @@ Inspired by Srinath Ravichandran's Dartmouth Spring 2016 Rendering Competition s
 ```bash
 # Clone the repository and cd into the repository root
 
+# install openMP to your computer
+
 # Build the project
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=RELEASE
@@ -47,3 +48,6 @@ cmake .. -DCMAKE_BUILD_TYPE=RELEASE
 # Build options:
 make DEMO=1    # Build with demo mode (material testing)
 make            # Build for final scene (chessboard)
+```
+# Notes 
+- when modified conf.json located under the root directory, please run cmake .. -DCMAKE_BUILD_TYPE=RELEASE to ensure that the build folder gets a updated copy of the json file. Alternatively, you may directly modify the conf.json file located in the build directory if you would like to play around with the scene without needing to run cmake and make repeatedly.
