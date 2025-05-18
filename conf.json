@@ -1,8 +1,8 @@
 {
   "_": "Example configuration file",
   "camera": {
-    "width": 930,
-    "height": 512,
+    "width": 1920,
+    "height": 1080,
     "fov": 45,
     "position": [278, 150, -2550],
     "target": [278, 0, 0],
@@ -12,7 +12,7 @@
     "apertureRadius": 5
   },
   "renderer": {
-    "spp": 32,
+    "spp": 2048,
     "parrallelism": 1,
     "path": "output.png"
   },
@@ -32,15 +32,15 @@
     "soldierYSpacing": 0,
     "soldierZSpacing": -356,
     "soldierCountPerRow": 7,
-    "soldierMaterials": ["rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor"],
+    "soldierMaterials": ["smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor"],
 
     "kingPosition": [0,0,0],
     "kingMaterial": "gold_conductor",
 
-    "lightPosition": [0, 1200, 0],
-    "lightBrightness": 10.0,
+    "lightPosition": [278, 1300, 0],
+    "lightBrightness": 4.0,
 
-    "wallMaterial": "smooth_glass",
+    "wallMaterial": "green_mirror",
     "floorMaterial": "rough_white_conductor",
     "floor_isTextured": true
   }
