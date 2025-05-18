@@ -136,10 +136,19 @@ class Material {
         if (!textured) {
             return extract(wavelen, base_reflectance);
         }
-        float scale = 16.f;
-        int cx = uv.x() * scale;
-        int cy = uv.y() * scale;
-        return ((cx + cy) & 1) ? 0.9 : 0.1;
+
+        // Determine which column (stripe) and row
+        int col = static_cast<int>((uv.x() - 0.05f) * 10);
+        int row = static_cast<int>((uv.y() - 0.00f) * 12);
+
+        // Checkerboard logic: alternate based on row + column parity
+        if (col >= 3 && col <= 5 && row <=7){
+            bool isWhite = (col + row) % 2 == 1;
+
+            return isWhite ? 0.9f : 0.1f;
+        }else{
+            return 0.1f;
+        }
     }
     // ==============================
     // === Start of GGX Functions ===

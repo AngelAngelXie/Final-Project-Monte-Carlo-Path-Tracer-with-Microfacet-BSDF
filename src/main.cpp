@@ -20,6 +20,10 @@ int main(int argc, char **argv) {
     Scene scene(camera);
     Renderer r;
 
+    std::string model_quality = "low";
+    std::string king_model = "../models/" + model_quality + "_king.obj";
+    std::string soldier_model = "../models/" + model_quality + "_soldier.obj";
+
     int w = 384, h = 384;
     Vector3f camPos(278, 273, -800);
     Vector3f camTarget(278, 273, 0);
@@ -73,14 +77,14 @@ int main(int argc, char **argv) {
     Material *clear_rough_plastic =
         new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
     clear_rough_plastic->iorA = 1.5f;
-    smooth_glass->iorB = 0.01f;
+    clear_rough_plastic->iorB = 0.01f;
     clear_rough_plastic->roughness = 0.02f;
     materials["clear_rough_plastic"] = clear_rough_plastic;
 
     // rough plastic
     Material *rough_plastic = new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
     rough_plastic->iorA = 1.5f;
-    smooth_glass->iorB = 0.01f;
+    rough_plastic->iorB = 0.01f;
     rough_plastic->roughness = 0.4f;
     materials["rough_plastic"] = rough_plastic;
 
@@ -116,23 +120,16 @@ int main(int argc, char **argv) {
 
     camera.useDOF = true;
     camera.focal_distance = 900;
-    camera.aperture_radius = 20;
+    camera.aperture_radius = 40;
 #else
     // =================================================================================
     // =================================================================================
-    // ====================START OF FINAL PRODUCT SCENE
-    // CONSTRUCTION==================== (controled by conf.json file located
-    // under the root directory)
+    // ====================START OF FINAL PRODUCT SCENE CONSTRUCTION==================== 
+    // (controled by conf.json file located under the root directory)
 
     // default settings
     Vector3f kingPosition = Vector3f(0.0f, 0.0f, 0.0f);
     Material *kingMaterial = materials["rough_plastic"];
-
-    std::vector<std::pair<Vector3f, Material *>> soldiers = {
-        {Vector3f(140, 0, -50), materials["rough_plastic"]},
-        {Vector3f(-456, 0, -50), materials["rough_plastic"]},
-        {Vector3f(-570, 0, -400), materials["rough_plastic"]},
-        {Vector3f(180, 0, -400), materials["rough_plastic"]}};
 
     Vector3f lightPosition = Vector3f(0, 200, 0);
 
@@ -192,6 +189,10 @@ int main(int argc, char **argv) {
 
         auto confScene = data["scene"];
         if (!confScene.is_null()) {
+            if (confScene["model_quality"].is_string()) {
+                model_quality = confScene["model_quality"];
+            }
+
             if (confScene["includeShadow"].is_boolean()) {
                 scene.enableShadow(confScene["includeShadow"]);
             }
@@ -214,19 +215,35 @@ int main(int argc, char **argv) {
                 kingMaterial = materials[confScene["kingMaterial"]];
             }
 
-            if (confScene.contains("soldierPositions") &&
+            if (confScene.contains("soldierLineUpPosition") &&
                 confScene.contains("soldierMaterials")) {
-                const auto &positions = confScene["soldierPositions"];
+                
+                // extract starting soldier position on left & right
+                const auto &left_row_positions = confScene["soldierLeftRowPosition"];
+                const auto &right_row_positions = confScene["soldierRightRowPosition"];
+                // extract space between sodilers
+                float x_spacing = confScene["soldierXSpacing"];
+                float y_spacing = confScene["soldierYSpacing"];
+                float z_spacing = confScene["soldierZSpacing"];
+
+                const auto &soldier_count = confScene["soldierCountPerRow"];
                 const auto &matNames = confScene["soldierMaterials"];
-                soldiers.clear();
-                for (size_t i = 0; i < positions.size(); i++) {
-                    const auto &pos = positions[i];
-                    Vector3f position(pos[0], pos[1], pos[2]);
-                    std::string matName = matNames[i];
-                    Material *material = materials.count(matName)
-                                             ? materials.at(matName)
-                                             : materials["rough_plastic"];
-                    soldiers.push_back(std::make_pair(position, material));
+
+                for (int i = 0; i < soldier_count; i++) {
+                    // calculate poition and material types
+                    float x_offset = i * x_spacing;
+                    float y_offset = i * y_spacing;
+                    float z_offset = i * z_spacing;
+                    Vector3f leftPos(left_row_positions[0]+x_offset, left_row_positions[1]+y_offset, left_row_positions[2]+z_offset);
+                    Vector3f rightPos(right_row_positions[0]+x_offset, right_row_positions[1]+y_offset, right_row_positions[2]+z_offset);
+                    Material *left_material = (i < matnames.size()) ? materials[matNames[i]] : materials["rough_plastic"];
+                    Material *right_material = (i + soldier_count < matnames.size()) ? materials[matName[i*2]] : materials["rough_plastic"];
+
+                    // create soldier pair mesh & add to scene
+                    auto* soldier_left = new MeshTriangle(soldier_model, left_material, leftPos);
+                    auto* soldier_right = new MeshTriangle(soldier_model, right_material, rightPos);
+                    scene.Add(soldier_left);
+                    scene.Add(soldier_right);
                 }
             }
 
@@ -256,16 +273,8 @@ int main(int argc, char **argv) {
                   << std::endl;
         exit(EXIT_FAILURE);
     }
-    MeshTriangle soldier_1("../models/soldier_zoom_12_final.obj",
-                           soldiers[0].second, soldiers[0].first);
-    MeshTriangle soldier_2("../models/soldier_zoom_12_final.obj",
-                           soldiers[1].second, soldiers[1].first);
-    MeshTriangle soldier_3("../models/soldier_zoom_12_final.obj",
-                           soldiers[2].second, soldiers[2].first);
-    MeshTriangle soldier_4("../models/soldier_zoom_12_final.obj",
-                           soldiers[3].second, soldiers[3].first);
 
-    MeshTriangle king("../models/king_zoom_12_final.obj", kingMaterial,
+    MeshTriangle king(king_model, kingMaterial,
                       kingPosition);
     MeshTriangle wall("../models/backwall.obj", wallMaterial, Vector3f::Zero());
     MeshTriangle floor("../models/bottom.obj", floorMaterial, Vector3f::Zero());

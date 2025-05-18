@@ -22,10 +22,17 @@
     "RussianRouletteRate": 0.7,
     "backgroundColor": [0.235294, 0.67451, 0.843137],
 
-    "_": "material options are: rough_red_conductor, gold_conductor, silver_mirror, green_mirror, smooth_glass, rough_plastic.",
+    "model_quality": "low",
 
-    "soldierPositions": [[140, 0, -50], [-456, 0, -50], [-570, 0, -400], [180, 0, -400]],
-    "soldierMaterials": ["green_mirror","rough_red_conductor","green_mirror","green_mirror"],
+    "_": "material options are: rough_red_conductor, rough_white_conductor, gold_conductor, silver_mirror, green_mirror, smooth_glass, clear_rough_plastic, rough_plastic.",
+
+    "soldierLeftRowPosition": [-559, 0, -200],
+    "soldierRightRowPosition": [160, 0, -200],
+    "soldierXSpacing": 0,
+    "soldierYSpacing": 0,
+    "soldierZSpacing": -356,
+    "soldierCountPerRow": 7,
+    "soldierMaterials": ["rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor"],
 
     "kingPosition": [0,0,0],
     "kingMaterial": "gold_conductor",
@@ -34,7 +41,7 @@
     "lightBrightness": 3.0,
 
     "wallMaterial": "smooth_glass",
-    "floorMaterial": "rough_plastic",
-    "floor_isTextured": false
+    "floorMaterial": "rough_white_conductor",
+    "floor_isTextured": true
   }
 }
