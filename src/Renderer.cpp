@@ -78,6 +78,10 @@ void Renderer::Render(const Scene &scene) {
             float colorG = scene.castRay(Ray(pos, dir), 0, GREEN);
             float colorB = scene.castRay(Ray(pos, dir), 0, BLUE);
             framebuffer[m] += Vector3f(colorR, colorG, colorB) / spp;
+            // std::cout<<"printing framebuffer at: "<<m<<std::endl;
+            // for(int temppy=0;temppy<3;temppy++){
+            //     std::cout<<framebuffer[m][temppy]<<std::endl;
+            // }
         }
         prog += 1.f / camera.height / camera.width;
         if (i == 0) {

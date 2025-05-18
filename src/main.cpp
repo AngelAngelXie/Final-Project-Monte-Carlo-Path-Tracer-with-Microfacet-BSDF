@@ -119,18 +119,33 @@ int main(int argc, char **argv) {
                 r.path = confRenderer["output"];
             }
         }
-
         auto confScene = data["scene"];
         if (!confScene.is_null()) {
             if (confScene["RussianRouletteRate"].is_number()) {
                 scene.setRrRate(confScene["RussianRouletteRate"]);
             }
-            if (is_v3(confScene["backgroundColor"])) {
-                scene.backgroundColor =
-                    Vector3f(confScene["backgroundColor"][0],
-                             confScene["backgroundColor"][1],
-                             confScene["backgroundColor"][2]);
+            // legacy solid color
+            if(!confScene["backgroundColor"].is_null()){//"backgroundColor": [0.235294, 0.67451, 0.843137]
+                if (is_v3(confScene["backgroundColor"])) {
+                    scene.backgroundColor = Vector3f(
+                        confScene["backgroundColor"][0],
+                        confScene["backgroundColor"][1],
+                        confScene["backgroundColor"][2]
+                    );
+                
+                }
             }
+            
+            if(!confScene["envMap"].is_null()){// "envMap": "/home/kamael/Desktop/Graphics_Final_Project/models/manba.png"
+                // std::cout<<"flag1"<<std::endl;
+                if (confScene["envMap"].is_string()) {
+                    // std::cout<<"flag2"<<std::endl;
+                    std::string envPath = confScene["envMap"];
+                    // std::cout<<"flag3, envPath: "<<envPath<<std::endl;
+                    scene.loadEnvMap(envPath);
+                }
+            }
+            
         }
 
     } catch (const std::exception &e) {
@@ -146,7 +161,7 @@ int main(int argc, char **argv) {
     scene.camera = camera;
 
     //  Scene building
-    scene.Add(&wall);
+    // scene.Add(&wall);
     scene.Add(&light_);
     scene.Add(&floor);
     scene.Add(&soldier_1);

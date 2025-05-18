@@ -9,6 +9,7 @@
 #include "WaveLen.hpp"
 #include "global.hpp"
 #include <Eigen/Dense>
+int test_temp=0;
 
 void Scene::buildBVH() {
     printf(" - Generating BVH...\n\n");
@@ -84,8 +85,31 @@ float Scene::directLighting(const Vector3f &wo, const Intersection &surf_inter,
 float Scene::castRay(const Ray &ray, int depth,
                      const WaveLenType &wavelen) const {
     auto inter = intersect(ray);
+    // std::cout<<"inside castray"<<std::endl;
     if (!inter.happened) {
-        return extract(wavelen, this->backgroundColor);
+        if (useEnvMap) {
+            // std::cout<<"flag1, in useEnvMap"<<std::endl;
+            // return extract(wavelen, sampleEnv(ray.direction));
+            Vector3f L = sampleEnv(ray.direction);
+            
+
+                // std::cout<< "colors of useEnvMap, sampleEnv result: index at " <<test_temp<<std::endl;
+            // std::cout<< L.transpose()<<std::endl;
+                // std::cout<<"extracted: "<<extract(wavelen, L)<<std::endl;
+
+            if(extract(wavelen, L)<0){
+                std::cout<<"extracted: "<<extract(wavelen, L)<<std::endl;
+            }
+            return extract(wavelen, this->backgroundColor);
+            //return extract(wavelen, L);
+            
+        }else{
+            if(test_temp++<6){
+                // std::cout<<"extracted: "<<extract(wavelen, this->backgroundColor)<<std::endl;
+            }
+            return extract(wavelen, this->backgroundColor);
+
+        }
     }
     auto p = inter.coords;
     auto n = inter.normal;
