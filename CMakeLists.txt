@@ -7,6 +7,11 @@ set(DEMO 0 CACHE STRING "Enable demo features (0=off, 1=on)")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (DEMO)
+    message(STATUS "Demo mode enabled")
+    add_definitions(-DDEMO)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEMO")
+endif()
 # Platform-specific compiler and OpenMP setup
 if(APPLE)
     # Use LLVM from Homebrew (supports OpenMP)
@@ -50,7 +55,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-add_compile_definitions("DEMO=$<IF:$<BOOL:${DEMO}>,1,0>")
 
 # Sources
 set(SOURCES
