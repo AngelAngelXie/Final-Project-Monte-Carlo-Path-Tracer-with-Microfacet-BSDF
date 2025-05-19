@@ -100,8 +100,7 @@ float Scene::castRay(const Ray &ray, int depth,
             if(extract(wavelen, L)<0){
                 std::cout<<"extracted: "<<extract(wavelen, L)<<std::endl;
             }
-            return extract(wavelen, this->backgroundColor);
-            //return extract(wavelen, L);
+            return extract(wavelen, L);
             
         }else{
             if(test_temp++<6){

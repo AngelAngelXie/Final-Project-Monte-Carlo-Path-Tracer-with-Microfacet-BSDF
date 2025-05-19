@@ -47,7 +47,7 @@ class Scene {
                       << "): " << lodepng_error_text(error) << std::endl;
             return;
         }
-        std::cout<<"flag5 decode: width height: "<<envWidth<<" , "<<envHeight<<std::endl;
+        // std::cout<<"flag5 decode: width height: "<<envWidth<<" , "<<envHeight<<std::endl;
         // std::cout<<"flag6 len of png: "<<png.size()<<std::endl;
         for (unsigned i = 0; i < 4; ++i) {
             unsigned idx = 4 * i;
@@ -56,7 +56,7 @@ class Scene {
             // std::cout<< (float)png[idx + 1]<<std::endl;
             // std::cout<< (float)png[idx + 2]<<std::endl;
         }
-        //useEnvMap = true;
+        useEnvMap = true;
         envPixels.reserve(envWidth * envHeight);
         // png is RGBA, so stride = 4
         for (unsigned i = 0; i < envWidth * envHeight; ++i) {

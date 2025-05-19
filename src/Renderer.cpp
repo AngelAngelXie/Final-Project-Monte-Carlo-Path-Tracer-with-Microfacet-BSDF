@@ -20,7 +20,7 @@ const int PARALLELISM = 8;
 // framebuffer is saved to a file.
 void Renderer::Render(const Scene &scene) {
     Camera camera = scene.camera;
-    std::vector<Vector3f> framebuffer(camera.width * camera.height);
+    std::vector<Vector3f> framebuffer(camera.width * camera.height, {0, 0, 0});
 
     float scale = tan(deg2rad(camera.fov * 0.5));
     float imageAspectRatio = camera.width / (float)camera.height;
