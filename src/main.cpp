@@ -169,8 +169,8 @@ int main(int argc, char **argv) {
             if (confCam["useDOF"].is_boolean()) {
                 camera.useDOF = confCam["useDOF"];
             }
-            if (camera.useDOF && confCam["focalDistance"].is_number()) {
-                camera.focal_distance = confCam["focalDistance"];
+            if (camera.useDOF && confCam["focusDistance"].is_number()) {
+                camera.focal_distance = confCam["focusDistance"];
             }
             if (camera.useDOF && confCam["apertureRadius"].is_number()) {
                 camera.aperture_radius = confCam["apertureRadius"];
@@ -307,7 +307,7 @@ int main(int argc, char **argv) {
     MeshTriangle light_("../models/light.obj", light, lightPosition);
 
     //  Scene building
-    // scene.Add(&wall);
+    scene.Add(&wall);
     scene.Add(&light_);
     scene.Add(&floor);
     scene.Add(&king);

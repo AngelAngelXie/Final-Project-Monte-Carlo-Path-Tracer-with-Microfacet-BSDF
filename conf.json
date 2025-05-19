@@ -7,20 +7,20 @@
     "position": [278, 150, -2550],
     "target": [278, 0, 0],
     "up": [0, 1, 0],
-    "useDOF": false,
-    "focusDistance": 100,
-    "apertureRadius": 5
+    "useDOF": true,
+    "focusDistance": 3036.98,
+    "apertureRadius": 10
   },
   "renderer": {
-    "spp": 2048,
-    "parrallelism": 1,
+    "spp": 1024,
+    "parrallelism": 8,
     "path": "output.png"
   },
   "scene": {
     "includeShadow": true,
     "directLightSample": 32,
     "RussianRouletteRate": 0.7,
-    "backgroundColor": [0.235294, 0.67451, 0.843137],
+    "envMap": "/home/kamael/Desktop/Graphics_Final_Project/models/manba.png",
 
     "model_quality": "low",
 
