@@ -24,6 +24,8 @@
 class Scene {
     float rrRate = 0.7;
     float invRr = 1 / .7;
+    bool enable_shadow = true;
+    int n_dir_sample = 4;
 
   public:
     // setting up options
@@ -172,6 +174,12 @@ class Scene {
     void setRrRate(float rr) {
         rrRate = std::min(rr, 0.99f);
         invRr = 1 / rrRate;
+    }
+    void setDirectLightSample(int x) {
+        n_dir_sample = x;
+    }
+    void enableShadow(bool shadow) {
+        enable_shadow = shadow;
     }
     void Add(std::unique_ptr<Light> light) {
         lights.push_back(std::move(light));

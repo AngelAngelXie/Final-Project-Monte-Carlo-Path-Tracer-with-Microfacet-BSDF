@@ -23,7 +23,7 @@ class Sphere : public Object {
     bool intersect(const Ray &ray, float &tnear,
                    uint32_t &index) const override;
 
-    Intersection getIntersection(Ray ray) {
+    Intersection getIntersection(Ray ray) override {
         Intersection result;
         result.happened = false;
         Vector3f L = ray.origin - center;
@@ -48,20 +48,20 @@ class Sphere : public Object {
     }
     void getSurfaceProperties(const Vector3f &P, const Vector3f &I,
                               const uint32_t &index, const Vector2f &uv,
-                              Vector3f &N, Vector2f &st) const {
+                              Vector3f &N, Vector2f &st) const override {
         N = (P - center).normalized();
     }
 
-    Vector3f evalDiffuseColor(const Vector2f &st) const {
+    Vector3f evalDiffuseColor(const Vector2f &st) const override {
         return m->getColor();
     }
-    Bounds3 getBounds() {
+    Bounds3 getBounds() override {
         return Bounds3(Vector3f(center.x() - radius, center.y() - radius,
                                 center.z() - radius),
                        Vector3f(center.x() + radius, center.y() + radius,
                                 center.z() + radius));
     }
-    void Sample(Intersection &pos, float &pdf) {
+    void Sample(Intersection &pos, float &pdf) override {
         float theta = 2.0 * M_PI * get_random_float(),
               phi = M_PI * get_random_float();
         Vector3f dir(std::cos(phi), std::sin(phi) * std::cos(theta),
@@ -72,8 +72,8 @@ class Sphere : public Object {
         pos.m = m;
         pdf = 1.0f / area;
     }
-    float getArea() { return area; }
-    bool hasEmit() { return m->hasEmission(); }
+    float getArea() override { return area; }
+    bool hasEmit() override { return m->hasEmission(); }
 };
 inline bool Sphere::intersect(const Ray &ray) { return true; }
 inline bool Sphere::intersect(const Ray &ray, float &tnear,

@@ -1,6 +1,7 @@
 #include "Material.hpp"
 #include "Renderer.hpp"
 #include "Scene.hpp"
+#include "Sphere.hpp"
 #include "Triangle.hpp"
 #include "json.hpp"
 #include <chrono>
@@ -19,59 +20,125 @@ int main(int argc, char **argv) {
     Scene scene(camera);
     Renderer r;
 
-    Material *red = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
-    red->base_reflectance = Vector3f(0.63f, 0.065f, 0.05f);
-    Material *green = new Material(SMOOTH_CONDUCTOR, Vector3f::Zero());
-    green->base_reflectance = Vector3f(0.14f, 0.45f, 0.091f);
-    Material *blue = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
-    blue->base_reflectance = Vector3f(0.14f, 0.091f, .45f);
-    Material *white = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
-    white->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
-    Material *pattern = new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
-    pattern->textured = true;
-    Material *white_plas = new Material(ROUGH_DIELECTRIC, Vector3f::Zero());
-    white_plas->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
-    Material *white_glas = new Material(SMOOTH_DIELECTRIC, Vector3f::Zero());
-    Material *light = new Material(
-        ROUGH_CONDUCTOR,
-        (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
-         15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
-         18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
+    std::string model_quality = "low";
+    std::string king_model = "../models/" + model_quality + "_king.obj";
+    std::string soldier_model = "../models/" + model_quality + "_soldier.obj";
 
     int w = 384, h = 384;
     Vector3f camPos(278, 273, -800);
     Vector3f camTarget(278, 273, 0);
     Vector3f camUp(0, 1, 0);
 
-#ifdef DEBUG
-    std::string root = std::filesystem::current_path().string();
-    MeshTriangle floor(root + "/models/cornellbox/floor.obj", white);
-    MeshTriangle shortbox(root + "/models/cornellbox/shortbox.obj", white);
-    MeshTriangle tallbox(root + "/models/cornellbox/tallbox.obj", white);
-    MeshTriangle left(root + "/models/cornellbox/left.obj", red);
-    MeshTriangle right(root + "/models/cornellbox/right.obj", green);
-    MeshTriangle light_(root + "/models/cornellbox/light.obj", light);
+    // define some materials
+    std::unordered_map<std::string, Material *> materials;
 
-    std::ifstream confJson(root + "/build/conf.json");
+    // rough red metal
+    Material *rough_red_conductor =
+        new Material(ROUGH_CONDUCTOR, Vector3f(0, 0, 0));
+    rough_red_conductor->roughness = 0.1f;
+    rough_red_conductor->base_reflectance = Vector3f(1.0f, 0.0f, 0.0f);
+    materials["rough_red_conductor"] = rough_red_conductor;
+
+    // rough white metal
+    Material *rough_white_conductor =
+        new Material(ROUGH_CONDUCTOR, Vector3f::Zero());
+    rough_white_conductor->base_reflectance = Vector3f(0.725f, 0.71f, 0.68f);
+    rough_white_conductor->roughness = 0.4f;
+    materials["rough_white_conductor"] = rough_white_conductor;
+
+    // green mirror
+    Material *green_mirror = new Material(ROUGH_CONDUCTOR, Vector3f(0, 0, 0));
+    green_mirror->roughness = 0.01f;
+    green_mirror->base_reflectance = Vector3f(0.14f, 1.0f, 0.14f);
+    materials["green_mirror"] = green_mirror;
+
+    // reflexive gold
+    Material *gold_conductor =
+        new Material(SMOOTH_CONDUCTOR, Vector3f(0, 0, 0));
+    gold_conductor->roughness = 0.0001f;
+    gold_conductor->base_reflectance = Vector3f(1.0f, 0.85f, 0.57f);
+    materials["gold_conductor"] = gold_conductor;
+
+    // silver mirror
+    Material *silver_mirror = new Material(SMOOTH_CONDUCTOR, Vector3f(0, 0, 0));
+    silver_mirror->roughness = 0.001f; // Very smooth
+    silver_mirror->base_reflectance =
+        Vector3f(0.972f, 0.960f, 0.915f); // Silver (very reflective)
+    materials["silver_mirror"] = silver_mirror;
+
+    // smooth glass
+    Material *smooth_glass = new Material(SMOOTH_DIELECTRIC, Vector3f(0, 0, 0));
+    smooth_glass->iorA = 1.7f;
+    smooth_glass->iorB = 0.04f;
+    smooth_glass->roughness = 0.01f;
+    materials["smooth_glass"] = smooth_glass;
+
+    // clear rough plastic
+    Material *clear_rough_plastic =
+        new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
+    clear_rough_plastic->iorA = 1.5f;
+    clear_rough_plastic->iorB = 0.01f;
+    clear_rough_plastic->roughness = 0.02f;
+    materials["clear_rough_plastic"] = clear_rough_plastic;
+
+    // rough plastic
+    Material *rough_plastic = new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
+    rough_plastic->iorA = 1.5f;
+    rough_plastic->iorB = 0.01f;
+    rough_plastic->roughness = 0.4f;
+    materials["rough_plastic"] = rough_plastic;
+
+#ifdef DEMO
+    Material *light = new Material(
+        ROUGH_CONDUCTOR,
+        (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
+         15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
+         18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
+
+    MeshTriangle light_("../models/cornellbox/light.obj", light);
+    MeshTriangle back("../models/cornellbox/floor.obj", rough_white_conductor);
+    MeshTriangle ground("../models/bottom.obj", rough_white_conductor);
+    MeshTriangle left("../models/cornellbox/left.obj", rough_red_conductor);
+    MeshTriangle right("../models/cornellbox/right.obj", gold_conductor);
+
+    MeshTriangle shortbox("../models/cornellbox/shortbox.obj", green_mirror);
+    MeshTriangle tallbox("../models/cornellbox/tallbox.obj", rough_plastic);
+    Sphere big_sphere({400, 90, 3}, 80, smooth_glass);
+    Sphere mid_sphere({250, 260, 230}, 60, clear_rough_plastic);
+    Sphere small_sphere({120, 390, 400}, 50, silver_mirror);
+
+    scene.Add(&back);
+    scene.Add(&ground);
+    scene.Add(&shortbox);
+    scene.Add(&tallbox);
+    scene.Add(&left);
+    scene.Add(&right);
+    scene.Add(&light_);
+    scene.Add(&big_sphere);
+    scene.Add(&mid_sphere);
+    scene.Add(&small_sphere);
+
+    camera.useDOF = true;
+    camera.focal_distance = 900;
+    camera.aperture_radius = 40;
 #else
-    MeshTriangle wall("../models/backwall.obj", green, Vector3f::Zero());
-    MeshTriangle light_("../models/light.obj", light, Vector3f(0, 200, 0));
-    MeshTriangle floor("../models/bottom.obj", pattern, Vector3f::Zero());
-    MeshTriangle soldier_1("../models/soldier_zoom_12_final.obj", white,
-                           Vector3f(-559, 0, -271));
-    MeshTriangle soldier_2("../models/soldier_zoom_12_final.obj", white,
-                           Vector3f(160, 0, -271));
-    MeshTriangle soldier_3("../models/soldier_zoom_12_final.obj", white,
-                           Vector3f(160, 0, -50));
-    MeshTriangle soldier_4("../models/soldier_zoom_12_final.obj", white,
-                           Vector3f(-546, 0, -50));
-    MeshTriangle king("../models/king_zoom_12_final.obj", white,
-                      Vector3f::Zero());
+    // =================================================================================
+    // =================================================================================
+    // ====================START OF FINAL PRODUCT SCENE CONSTRUCTION==================== 
+    // (controled by conf.json file located under the root directory)
 
-    std::ifstream confJson("conf.json");
-#endif
+    // default settings
+    Vector3f kingPosition = Vector3f(0.0f, 0.0f, 0.0f);
+    Material *kingMaterial = materials["rough_plastic"];
+
+    Vector3f lightPosition = Vector3f(0, 200, 0);
+
+    Material *wallMaterial = materials["rough_plastic"];
+    Material *floorMaterial = materials["rough_plastic"];
+    float brightness_scale = 1.0f;
 
     //  Reading configuration file
+    std::ifstream confJson("conf.json");
     try {
         auto data = json::parse(confJson);
 
@@ -121,6 +188,13 @@ int main(int argc, char **argv) {
         }
         auto confScene = data["scene"];
         if (!confScene.is_null()) {
+            if (confScene["model_quality"].is_string()) {
+                model_quality = confScene["model_quality"];
+            }
+
+            if (confScene["includeShadow"].is_boolean()) {
+                scene.enableShadow(confScene["includeShadow"]);
+            }
             if (confScene["RussianRouletteRate"].is_number()) {
                 scene.setRrRate(confScene["RussianRouletteRate"]);
             }
@@ -146,6 +220,72 @@ int main(int argc, char **argv) {
                 }
             }
             
+
+            if (is_v3(confScene["kingPosition"])) {
+                kingPosition = Vector3f(confScene["kingPosition"][0],
+                                        confScene["kingPosition"][1],
+                                        confScene["kingPosition"][2]);
+            }
+            if (confScene["kingMaterial"].is_string()) {
+                kingMaterial = materials[confScene["kingMaterial"]];
+            }
+
+            if (confScene.contains("soldierLeftRowPosition") &&
+                confScene.contains("soldierRightRowPosition") &&
+                confScene.contains("soldierMaterials")) {
+                
+                // extract starting soldier position on left & right
+                const auto &left_row_positions = confScene["soldierLeftRowPosition"];
+                const auto &right_row_positions = confScene["soldierRightRowPosition"];
+                // extract space between sodilers
+                float x_spacing = confScene["soldierXSpacing"];
+                float y_spacing = confScene["soldierYSpacing"];
+                float z_spacing = confScene["soldierZSpacing"];
+
+                const auto &soldier_count = confScene["soldierCountPerRow"].get<int>();
+                const auto &matNames = confScene["soldierMaterials"];
+
+                for (int i = 0; i < soldier_count; i++) {
+                    // calculate poition and material types
+                    float x_offset = i * x_spacing;
+                    float y_offset = i * y_spacing;
+                    float z_offset = i * z_spacing;
+                    Vector3f leftPos(
+                        left_row_positions[0].get<float>() + x_offset,
+                        left_row_positions[1].get<float>() + y_offset,
+                        left_row_positions[2].get<float>() + z_offset
+                    );
+                    Vector3f rightPos(
+                        right_row_positions[0].get<float>() + x_offset,
+                        right_row_positions[1].get<float>() + y_offset,
+                        right_row_positions[2].get<float>() + z_offset
+                    );
+                    Material *left_material = (i < matNames.size()) ? materials[matNames[i]] : materials["rough_plastic"];
+                    Material *right_material = ((i + soldier_count) < matNames.size()) ? materials[matNames[i+soldier_count]] : materials["rough_plastic"];
+
+                    // create soldier pair mesh & add to scene
+                    auto* soldier_left = new MeshTriangle(soldier_model, left_material, leftPos);
+                    auto* soldier_right = new MeshTriangle(soldier_model, right_material, rightPos);
+                    scene.Add(soldier_left);
+                    scene.Add(soldier_right);
+                }
+            }
+
+            if (is_v3(confScene["lightPosition"])) {
+                lightPosition = Vector3f(confScene["lightPosition"][0],
+                                         confScene["lightPosition"][1],
+                                         confScene["lightPosition"][2]);
+            }
+            if (confScene["lightBrightness"].is_number_float()) {
+                brightness_scale = confScene["lightBrightness"];
+            }
+            if (confScene["floorMaterial"].is_string()) {
+                floorMaterial = materials[confScene["floorMaterial"]];
+                floorMaterial->textured = confScene["floor_isTextured"];
+            }
+            if (confScene["wallMaterial"].is_string()) {
+                wallMaterial = materials[confScene["wallMaterial"]];
+            }
         }
 
     } catch (const std::exception &e) {
@@ -153,22 +293,35 @@ int main(int argc, char **argv) {
                   << std::endl;
     }
 
-    camera.width = w;
-    camera.height = h;
-    camera.position = camPos;
-    camera.lookAt(camTarget, camUp);
-    // Change the definition here to change resolution
-    scene.camera = camera;
+    MeshTriangle king(king_model, kingMaterial,
+                      kingPosition);
+    MeshTriangle wall("../models/backwall.obj", wallMaterial, Vector3f::Zero());
+    MeshTriangle floor("../models/bottom.obj", floorMaterial, Vector3f::Zero());
+
+    Material *light = new Material(
+        ROUGH_CONDUCTOR,
+        brightness_scale *
+            (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
+             15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
+             18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
+    MeshTriangle light_("../models/light.obj", light, lightPosition);
 
     //  Scene building
     // scene.Add(&wall);
     scene.Add(&light_);
     scene.Add(&floor);
-    scene.Add(&soldier_1);
-    scene.Add(&soldier_2);
-    scene.Add(&soldier_3);
-    scene.Add(&soldier_4);
     scene.Add(&king);
+
+    // =====================END OF FINAL PRODUCT SCENE CONSTRUCTION=====================
+    // =================================================================================
+    // =================================================================================
+#endif
+
+    camera.width = w;
+    camera.height = h;
+    camera.position = camPos;
+    camera.lookAt(camTarget, camUp);
+    scene.camera = camera;
 
     scene.buildBVH();
 

@@ -19,5 +19,5 @@ class Renderer {
     std::string path = "./output.png";
 
   private:
-    int spp = 1024;
+    int spp = 2048;
 };
