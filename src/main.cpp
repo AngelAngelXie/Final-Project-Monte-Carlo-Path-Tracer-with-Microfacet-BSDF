@@ -73,6 +73,12 @@ int main(int argc, char **argv) {
     smooth_glass->roughness = 0.01f;
     materials["smooth_glass"] = smooth_glass;
 
+    Material *smooth_glass_gem = new Material(SMOOTH_DIELECTRIC, Vector3f(0, 0, 0));
+    smooth_glass_gem->iorA = 0.8f;
+    smooth_glass_gem->iorB = 0.2f;
+    smooth_glass_gem->roughness = 0.001f;
+    materials["smooth_glass_gem"] = smooth_glass_gem;
+
     // clear rough plastic
     Material *clear_rough_plastic =
         new Material(ROUGH_DIELECTRIC, Vector3f(0, 0, 0));
@@ -297,6 +303,8 @@ int main(int argc, char **argv) {
                       kingPosition);
     MeshTriangle wall("../models/backwall.obj", wallMaterial, Vector3f::Zero());
     MeshTriangle floor("../models/bottom.obj", floorMaterial, Vector3f::Zero());
+    MeshTriangle diamond("../models/diamond.obj", smooth_glass_gem);
+
 
     Material *light = new Material(
         ROUGH_CONDUCTOR,
@@ -311,6 +319,7 @@ int main(int argc, char **argv) {
     scene.Add(&light_);
     scene.Add(&floor);
     scene.Add(&king);
+    scene.Add(&diamond);
 
     // =====================END OF FINAL PRODUCT SCENE CONSTRUCTION=====================
     // =================================================================================
