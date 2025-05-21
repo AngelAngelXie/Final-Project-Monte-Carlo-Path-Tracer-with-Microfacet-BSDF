@@ -42,6 +42,7 @@
 
     "wallMaterial": "rough_white_conductor",
     "floorMaterial": "silver_mirror",
+    "addDiamond": true,
     "floor_isTextured": true
   }
 }

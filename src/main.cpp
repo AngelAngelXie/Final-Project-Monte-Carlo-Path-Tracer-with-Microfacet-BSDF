@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
     Scene scene(camera);
     Renderer r;
 
+    bool use_diamond = false;
     std::string model_quality = "low";
     std::string king_model = "../models/" + model_quality + "_king.obj";
     std::string soldier_model = "../models/" + model_quality + "_soldier.obj";
@@ -194,6 +195,9 @@ int main(int argc, char **argv) {
         }
         auto confScene = data["scene"];
         if (!confScene.is_null()) {
+            if(confScene["addDiamond"].is_boolean()) {
+                use_diamond = true;
+            }
             if (confScene["model_quality"].is_string()) {
                 model_quality = confScene["model_quality"];
             }
@@ -319,7 +323,8 @@ int main(int argc, char **argv) {
     scene.Add(&light_);
     scene.Add(&floor);
     scene.Add(&king);
-    scene.Add(&diamond);
+    if(use_diamond == true){scene.Add(&diamond); }
+    
 
     // =====================END OF FINAL PRODUCT SCENE CONSTRUCTION=====================
     // =================================================================================
