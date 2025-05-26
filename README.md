@@ -1,44 +1,30 @@
-# Graphics_Final_Project
-Junhao Liu(u7778766), Qingchuan Rui(u7776331), Jiaxin Xie(u8153316), Jinghang Li(u8162481)
-
-[Project Detail Doc](https://docs.google.com/document/d/1A8Ojkn1N-bKzjAkaoPQIdWHmSiVXNFrjWJzCkogCvlA/edit?tab=t.0)
-
 # Monte Carlo Path Tracer with Microfacet BSDF
 
-Final Rendering Result
-<img width="1596" alt="final_render_result" src="https://github.com/user-attachments/assets/2ff9decd-a83e-43d5-a405-972465d7cffe" />
-
-
-Demo image using 8 pre-defined material types (left). Demo image with depth of field applied (right).
-<img width="767" alt="demo" src="https://github.com/user-attachments/assets/639f76d2-f49d-4f89-b7f5-c21cf826b853" />
-
-
 ## Project Description
-
-This is a final project for ANU COMP 4610/8610 Computer Graphics Course, implementing a Monte Carlo path tracer featuring:
-
-- Microfacet BSDF for realistic material rendering inspired by the paper [Microfacet Models for Refraction through Rough Surfaces](https://www.graphics.cornell.edu/~bjw/microfacetbsdf.pdf)
-- Support for smooth/rough dielectric/conductor materials
-- Advanced lighting effects including [depth of field](https://blog.demofox.org/2018/07/04/pathtraced-depth-of-field-bokeh/) and soft shadows
-
-Inspired by Srinath Ravichandran's Dartmouth Spring 2016 Rendering Competition submission:  
+Physically based rendering with global illumination inspired by Srinath Ravichandran's Dartmouth Spring 2016 Rendering Competition submission:  
 [Dartmouth Rendering Competition Entry](https://www.cs.dartmouth.edu/~rendering-competition/sp2016/submissions/srinathravichandran/final.html)
 
-## Features
+## Team Members
+- **Junhao Liu** (COMP8610 / u7778766)
+- **Qingchuan Rui** (COMP8610 / u7776331)
+- **Jiaxin Xie** (COMP4610 / u8153316)
+- **Jinghang Li** (COMP4610 / u8162481)
 
-- Physically-based rendering with global illumination
-- depth of field
-- environment map
-- Material system supporting:
-  - Rough/smooth conductors (metals)
-  - Dielectrics (glass, plastic)
-  - Textured floor surface
-- Configurable scene elements via JSON
-- Demo mode for a close up look at materials in the cornel box
+## Key Features
+- Built on the GAMES101 Assignment 6 framework:  
+  https://sites.cs.ucsb.edu/~lingqi/teaching/games101.html
+- Monte Carlo path tracing with BVH acceleration.
+- Microfacet BSDF for realistic material rendering, inspired by the paper:  
+  ["Microfacet Models for Refraction through Rough Surfaces"](https://www.graphics.cornell.edu/~bjw/microfacetbsdf.pdf)
+- Depth of Field implementation inspired by:  
+  https://blog.demofox.org/2018/07/04/pathtraced-depth-of-field-bokeh/
+- Gem-like refraction inspired by Josh Wiseman’s 2005 CS348B Final Project:  
+  https://graphics.stanford.edu/courses/cs348b-competition/cs348b-05/gems2/index.html
 
-## Installation & Usage
+## Final Rendering Result
+TO BE ADDED ....
 
-### Build Instructions
+## Installation / Build Instructions
 
 ```bash
 # Clone the repository and cd into the repository root
@@ -53,5 +39,39 @@ cmake .. -DCMAKE_BUILD_TYPE=RELEASE
 make DEMO=1    # Build with demo mode (material testing)
 make            # Build for final scene (chessboard)
 ```
-# Notes 
-- when modified conf.json located under the root directory, please run cmake .. -DCMAKE_BUILD_TYPE=RELEASE to ensure that the build folder gets a updated copy of the json file. Alternatively, you may directly modify the conf.json file located in the build directory if you would like to play around with the scene without needing to run cmake and make repeatedly.
+## Usage
+
+We support various user controls via the `conf.json` file located in the root directory.  
+Running `cmake .. -DCMAKE_BUILD_TYPE=RELEASE` will create a copy of the `conf.json` file inside the `build/` directory.  
+Users may freely modify the copied JSON file in the `build/` directory to experiment with different settings without affecting the default configuration in the root directory.
+
+### Camera Settings (`camera` section in `conf.json`)
+- `"width"` / `"height"`: screen resolution
+- `"fov"`: field of view
+- `"position"`: camera position in 3D space
+- `"target"`: direction the camera is looking at
+- `"useDOF"`: enable or disable depth of field
+- `"focusDistance"`: distance at which objects appear in focus
+- `"apertureRadius"`: size of aperture affecting DoF strength
+
+### Render Quality
+- `"spp"` (samples per pixel): controls image quality
+  - Default: `2048` (used for final render)
+  - For quicker preview renders, use lower values (e.g., `32`, `128`, `256`)
+
+### Scene Settings (`scene` section in `conf.json`)
+- Move the main objects’ positions
+- Change objects’ surface materials or texture maps  
+  - Supported materials:
+    - `rough_red_conductor`
+    - `rough_white_conductor`
+    - `gold_conductor`
+    - `silver_mirror`
+    - `green_mirror`
+    - `smooth_glass`
+    - `clear_rough_plastic`
+    - `rough_plastic`
+- `"includeShadow"`: toggle shadow effect on/off
+- `"lightPosition"` / `"lightBrightness"`: control the light source’s location and intensity
+- `"envMap"`: change the environment map for image-based lighting
+
