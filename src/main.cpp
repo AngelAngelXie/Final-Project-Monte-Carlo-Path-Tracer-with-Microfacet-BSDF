@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
     materials["smooth_glass"] = smooth_glass;
 
     Material *smooth_glass_gem = new Material(SMOOTH_DIELECTRIC, Vector3f(0, 0, 0));
-    smooth_glass_gem->iorA = 0.8f;
+    smooth_glass_gem->iorA = 1.3f;
     smooth_glass_gem->iorB = 0.2f;
     smooth_glass_gem->roughness = 0.001f;
     materials["smooth_glass_gem"] = smooth_glass_gem;
