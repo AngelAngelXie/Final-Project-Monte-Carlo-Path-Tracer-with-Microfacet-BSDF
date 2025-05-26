@@ -74,6 +74,7 @@ int main(int argc, char **argv) {
     smooth_glass->roughness = 0.01f;
     materials["smooth_glass"] = smooth_glass;
 
+    // gem refraction test material
     Material *smooth_glass_gem = new Material(SMOOTH_DIELECTRIC, Vector3f(0, 0, 0));
     smooth_glass_gem->iorA = 1.3f;
     smooth_glass_gem->iorB = 0.2f;
@@ -208,29 +209,20 @@ int main(int argc, char **argv) {
             if (confScene["RussianRouletteRate"].is_number()) {
                 scene.setRrRate(confScene["RussianRouletteRate"]);
             }
-            // legacy solid color
-            if(!confScene["backgroundColor"].is_null()){//"backgroundColor": [0.235294, 0.67451, 0.843137]
-                if (is_v3(confScene["backgroundColor"])) {
+            
+            if(!confScene["envMap"].is_null()){
+                if (confScene["envMap"].is_string()) {
+                    std::string envPath = confScene["envMap"];
+                    scene.loadEnvMap(envPath);
+                } else if (is_v3(confScene["envMap"])) {
                     scene.backgroundColor = Vector3f(
                         confScene["backgroundColor"][0],
                         confScene["backgroundColor"][1],
                         confScene["backgroundColor"][2]
                     );
-                
                 }
             }
             
-            if(!confScene["envMap"].is_null()){// "envMap": "/home/kamael/Desktop/Graphics_Final_Project/models/manba.png"
-                // std::cout<<"flag1"<<std::endl;
-                if (confScene["envMap"].is_string()) {
-                    // std::cout<<"flag2"<<std::endl;
-                    std::string envPath = confScene["envMap"];
-                    // std::cout<<"flag3, envPath: "<<envPath<<std::endl;
-                    scene.loadEnvMap(envPath);
-                }
-            }
-            
-
             if (is_v3(confScene["kingPosition"])) {
                 kingPosition = Vector3f(confScene["kingPosition"][0],
                                         confScene["kingPosition"][1],

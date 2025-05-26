@@ -7,7 +7,9 @@
     "position": [278, 150, -2550],
     "target": [278, 0, 0],
     "up": [0, 1, 0],
-    "useDOF": false,
+
+    "note_0": "Modify useDOF to turn on/off the depth of field effect. focusDistance & apertureRadius can be adjusted for different blurring effects",
+    "useDOF": true,
     "focusDistance": 3036.98,
     "apertureRadius": 10
   },
@@ -20,29 +22,40 @@
     "includeShadow": true,
     "directLightSample": 32,
     "RussianRouletteRate": 0.4,
-    "envMap": "../models/sky.png",
 
+    "note_1": "To set the environment map, either specify the enviornment map path from ../models/envoMaps/{envo.png} or specify the color you want to use like [0.235294, 0.67451, 0.843137]",
+    "envMap": "../models/envoMaps/sky.png",
+
+    "note_2": "If you set model_quality to high, you will use meshes with more faces. In general, using low quality is sufficient to stay within the 4 hour rendering time limit.",
     "model_quality": "low",
 
-    "_": "material options are: rough_red_conductor, rough_white_conductor, gold_conductor, silver_mirror, green_mirror, smooth_glass, clear_rough_plastic, rough_plastic.",
-
+    "kingPosition": [0,0,0],
     "soldierLeftRowPosition": [-559, 0, -200],
     "soldierRightRowPosition": [160, 0, -200],
     "soldierXSpacing": 0,
     "soldierYSpacing": 0,
     "soldierZSpacing": -356,
     "soldierCountPerRow": 7,
-    "soldierMaterials": ["smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor"],
 
-    "kingPosition": [0,0,0],
+    "note_3": "material options are: rough_red_conductor, rough_white_conductor, green_mirror, gold_conductor, silver_mirror, smooth_glass, smooth_glass_gem, clear_rough_plastic, rough_plastic.",
     "kingMaterial": "gold_conductor",
+    "soldierMaterials": ["smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor"],
+    "wallMaterial": "rough_white_conductor",
+    "floorMaterial": "silver_mirror",
+
+    "note_4": "setting texture to true will render the chessboard. setting to false will lead to a patternless floor",
+    "floor_isTextured": true,
 
     "lightPosition": [278, 1200, 500],
     "lightBrightness": 100.0,
 
-    "wallMaterial": "rough_white_conductor",
-    "floorMaterial": "silver_mirror",
-    "addDiamond": true,
-    "floor_isTextured": true
+    "note_4": "setting texture to true will render the chessboard. setting to false will lead to a patternless floor",
+    "floor_isTextured": true,
+
+    "lightPosition": [278, 1200, 500],
+    "lightBrightness": 100.0,
+
+    "note_5": "set to true if you would like to see the diamond in the final scene for gem-like refraction display",
+    "addDiamond": true
   }
 }
