@@ -1,9 +1,9 @@
 {
   "_": "Example configuration file",
   "camera": {
-    "width": 1920,
-    "height": 1080,
-    "fov": 45,
+    "width": 384,
+    "height": 384,
+    "fov": 70,
     "position": [278, 150, -2550],
     "target": [278, 0, 0],
     "up": [0, 1, 0],
@@ -12,7 +12,7 @@
     "apertureRadius": 10
   },
   "renderer": {
-    "spp":1024,
+    "spp":120,
     "parrallelism": 8,
     "path": "output.png"
   },
@@ -20,7 +20,7 @@
     "includeShadow": true,
     "directLightSample": 32,
     "RussianRouletteRate": 0.4,
-    "envMap": "/home/kamael/Desktop/Graphics_Final_Project/models/sky.png",
+    "envMap": "../models/sky.png",
 
     "model_quality": "low",
 
@@ -37,8 +37,8 @@
     "kingPosition": [0,0,0],
     "kingMaterial": "gold_conductor",
 
-    "lightPosition": [278, 1300, 0],
-    "lightBrightness": 10.0,
+    "lightPosition": [278, 1200, 500],
+    "lightBrightness": 100.0,
 
     "wallMaterial": "rough_white_conductor",
     "floorMaterial": "silver_mirror",

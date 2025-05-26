@@ -85,29 +85,12 @@ float Scene::directLighting(const Vector3f &wo, const Intersection &surf_inter,
 float Scene::castRay(const Ray &ray, int depth,
                      const WaveLenType &wavelen) const {
     auto inter = intersect(ray);
-    // std::cout<<"inside castray"<<std::endl;
     if (!inter.happened) {
         if (useEnvMap) {
-            // std::cout<<"flag1, in useEnvMap"<<std::endl;
-            // return extract(wavelen, sampleEnv(ray.direction));
             Vector3f L = sampleEnv(ray.direction);
-            
-
-                // std::cout<< "colors of useEnvMap, sampleEnv result: index at " <<test_temp<<std::endl;
-            // std::cout<< L.transpose()<<std::endl;
-                // std::cout<<"extracted: "<<extract(wavelen, L)<<std::endl;
-
-            if(extract(wavelen, L)<0){
-                std::cout<<"extracted: "<<extract(wavelen, L)<<std::endl;
-            }
-            return extract(wavelen, L);
-            
+            return extract(wavelen, L); 
         }else{
-            if(test_temp++<6){
-                // std::cout<<"extracted: "<<extract(wavelen, this->backgroundColor)<<std::endl;
-            }
             return extract(wavelen, this->backgroundColor);
-
         }
     }
     auto p = inter.coords;
@@ -159,6 +142,10 @@ float Scene::castRay(const Ray &ray, int depth,
                         std::abs(wo.dot(n)) / m->pdf(wi, wo, n, wavelen, true) *
                         invRr;
             }
+        }else{
+                float envMap_color = extract(wavelen, sampleEnv(r.direction));
+                l_ind = envMap_color* m->eval(wi, wo, n, wavelen, uv, true) * invRr;
+
         }
     } else {
         if (wo.dot(mfn) < 0) { //  in-out refraction
@@ -182,6 +169,10 @@ float Scene::castRay(const Ray &ray, int depth,
                         std::abs(wo.dot(n)) /
                         m->pdf(wi, wo, n, wavelen, false) * invRr;
             }
+        }else{
+                float envMap_color1 = extract(wavelen, sampleEnv(r.direction));
+                l_ind = envMap_color1* m->eval(wi, wo, n, wavelen, uv, false) * invRr;
+
         }
     }
 

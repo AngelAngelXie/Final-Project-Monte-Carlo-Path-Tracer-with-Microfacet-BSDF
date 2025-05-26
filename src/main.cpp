@@ -319,7 +319,7 @@ int main(int argc, char **argv) {
     MeshTriangle light_("../models/light.obj", light, lightPosition);
 
     //  Scene building
-    scene.Add(&wall);
+    // scene.Add(&wall);
     scene.Add(&light_);
     scene.Add(&floor);
     scene.Add(&king);
