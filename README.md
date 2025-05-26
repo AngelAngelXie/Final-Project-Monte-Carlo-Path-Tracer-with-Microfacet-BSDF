@@ -1,8 +1,7 @@
 # Monte Carlo Path Tracer with Microfacet BSDF
 
 ## Project Description
-Physically based rendering with global illumination inspired by Srinath Ravichandran's Dartmouth Spring 2016 Rendering Competition submission:  
-[Dartmouth Rendering Competition Entry](https://www.cs.dartmouth.edu/~rendering-competition/sp2016/submissions/srinathravichandran/final.html)
+Physically based rendering with global illumination inspired by [Srinath Ravichandran's Dartmouth Spring 2016 Rendering Competition submission](https://www.cs.dartmouth.edu/~rendering-competition/sp2016/submissions/srinathravichandran/final.html)
 
 ## Team Members
 - **Junhao Liu** (COMP8610 / u7778766)
@@ -11,15 +10,10 @@ Physically based rendering with global illumination inspired by Srinath Ravichan
 - **Jinghang Li** (COMP4610 / u8162481)
 
 ## Key Features
-- Built on the GAMES101 Assignment 6 framework:  
-  https://sites.cs.ucsb.edu/~lingqi/teaching/games101.html
-- Monte Carlo path tracing with BVH acceleration.
-- Microfacet BSDF for realistic material rendering, inspired by the paper:  
-  ["Microfacet Models for Refraction through Rough Surfaces"](https://www.graphics.cornell.edu/~bjw/microfacetbsdf.pdf)
-- Depth of Field implementation inspired by:  
-  https://blog.demofox.org/2018/07/04/pathtraced-depth-of-field-bokeh/
-- Gem-like refraction inspired by Josh Wiseman’s 2005 CS348B Final Project:  
-  https://graphics.stanford.edu/courses/cs348b-competition/cs348b-05/gems2/index.html
+- We built on top of the code framework provided by [UCSB GAMES101 Assignment 6](https://sites.cs.ucsb.edu/~lingqi/teaching/games101.html), and added modifications to implement our Monte Carlo path tracing with BVH acceleration.
+- Microfacet BSDF for realistic material rendering, inspired by the paper: ["Microfacet Models for Refraction through Rough Surfaces"](https://www.graphics.cornell.edu/~bjw/microfacetbsdf.pdf)
+- Depth of Field implementation inspired by [this blog](https://blog.demofox.org/2018/07/04/pathtraced-depth-of-field-bokeh/)
+- [Gem-like refraction inspired by Josh Wiseman’s 2005 CS348B Final Project](https://graphics.stanford.edu/courses/cs348b-competition/cs348b-05/gems2/index.html)
 
 ## Final Rendering Result
 TO BE ADDED ....
@@ -38,6 +32,11 @@ cmake .. -DCMAKE_BUILD_TYPE=RELEASE
 # Build options:
 make DEMO=1    # Build with demo mode (material testing)
 make            # Build for final scene (chessboard)
+
+# Specify your scene configurations according to the usage section below.
+
+# Render image:
+./RayTracing
 ```
 ## Usage
 
