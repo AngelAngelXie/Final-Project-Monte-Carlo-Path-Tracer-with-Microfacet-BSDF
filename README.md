@@ -16,7 +16,8 @@ Physically based rendering with global illumination inspired by [Srinath Ravicha
 - [Gem-like refraction inspired by Josh Wiseman’s 2005 CS348B Final Project](https://graphics.stanford.edu/courses/cs348b-competition/cs348b-05/gems2/index.html)
 
 ## Final Rendering Result
-TO BE ADDED ....
+Image Result Rendered in 2 hours, using 8-threaded OpenMP parallel Programming with spects(1960x1080, spp=2048, direct light sample = 32, Russian Roulette = 0.4, depth of field enabled)
+![final_render_result_with_dof](https://github.com/user-attachments/assets/3ed90044-718c-4778-9419-fbfd3bba1bd0)
 
 ## Installation / Build Instructions
 
