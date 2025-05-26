@@ -40,9 +40,9 @@ make            # Build for final scene (chessboard)
 ```
 ## Usage
 
-We support various user controls via the `conf.json` file located in the root directory.  
-Running `cmake .. -DCMAKE_BUILD_TYPE=RELEASE` will create a copy of the `conf.json` file inside the `build/` directory.  
-Users may freely modify the copied JSON file in the `build/` directory to experiment with different settings without affecting the default configuration in the root directory.
+We support various user controls via the `conf.json` file located in the root directory. Rendering result is named `output.png`, and can be found under build.
+
+Running `cmake .. -DCMAKE_BUILD_TYPE=RELEASE` will create a copy of the `conf.json` file inside the `build/` directory. Users may freely modify the copied JSON file in the `build/` directory to experiment with different settings without affecting the default configuration in the root directory.
 
 ### Camera Settings (`camera` section in `conf.json`)
 - `"width"` / `"height"`: screen resolution
