@@ -20,7 +20,7 @@
     "includeShadow": true,
     "directLightSample": 32,
     "RussianRouletteRate": 0.4,
-    "envMap": "/home/kamael/Desktop/Graphics_Final_Project/models/manba.png",
+    "envMap": "/home/kamael/Desktop/Graphics_Final_Project/models/sky.png",
 
     "model_quality": "low",
 
