@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
 #ifdef DEMO
     Material *light = new Material(
         ROUGH_CONDUCTOR,
-        (8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
+        4*(8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
          15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
          18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
 
@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
     scene.Add(&mid_sphere);
     scene.Add(&small_sphere);
 
-    camera.useDOF = true;
+    camera.useDOF = false;
     camera.focal_distance = 900;
     camera.aperture_radius = 40;
 #else
@@ -311,7 +311,7 @@ int main(int argc, char **argv) {
     MeshTriangle light_("../models/light.obj", light, lightPosition);
 
     //  Scene building
-    scene.Add(&wall);
+    // scene.Add(&wall);
     scene.Add(&light_);
     scene.Add(&floor);
     scene.Add(&king);

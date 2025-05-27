@@ -46,7 +46,7 @@
     "note_4": "setting texture to true will render the chessboard. setting to false will lead to a patternless floor",
     "floor_isTextured": true,
 
-    "lightPosition": [278, 1200, 500],
+    "lightPosition": [278, 1300, 0],
     "lightBrightness": 100.0,
 
     "note_5": "set to true if you would like to see the diamond in the final scene for gem-like refraction display",
