@@ -42,7 +42,7 @@ mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=RELEASE && make                 # Build for final scene (chessboard)
 cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DDEMO=1 && make        # Build with demo mode (material testing)   
 
-# Specify your scene configurations according to the usage section below.
+# Specify your scene configurations inside your build's JSON file according to the usage section below.
 
 # Render image:
 ./RayTracing
