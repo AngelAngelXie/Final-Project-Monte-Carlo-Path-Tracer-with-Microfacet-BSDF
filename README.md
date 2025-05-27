@@ -80,9 +80,10 @@ Running `cmake .. -DCMAKE_BUILD_TYPE=RELEASE` will create a copy of the `conf.js
     - `silver_mirror`
     - `green_mirror`
     - `smooth_glass`
+    - `smooth_glass_gem`
     - `clear_rough_plastic`
     - `rough_plastic`
 - `"includeShadow"`: toggle shadow effect on/off
 - `"lightPosition"` / `"lightBrightness"`: control the light source’s location and intensity
-- `"envMap"`: change the environment map for image-based lighting
+- `"envMap"`: change the environment map or background color
 
