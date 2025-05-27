@@ -18,12 +18,12 @@ Physically based rendering with global illumination inspired by [Srinath Ravicha
 ## Final Rendering Result
 Image Result Rendered in 2 hours on CPU, using 8-threaded OpenMP parallel Programming with specs: 
 
-1960x1080, spp=2048, direct light sample = 32, Russian Roulette = 0.4, depth of field enabled
+1920x1080, spp=2048, direct light sample = 32, Russian Roulette = 0.4, depth of field enabled
 ![final_render_result_with_dof](https://github.com/user-attachments/assets/3ed90044-718c-4778-9419-fbfd3bba1bd0)
 
 Image Result Rendered in 2 hours and 10 minutes on CPU, using 8-threaded OpenMP parallel Programming with specs: 
 
-1960x1080, spp=2048, direct light sample = 32, Russian Roulette = 0.4, depth of field disabled
+1920x1080, spp=2048, direct light sample = 32, Russian Roulette = 0.4, depth of field disabled
 ![final_render_result_dark_without_dof](https://github.com/user-attachments/assets/60c3b617-04d4-4a52-ab85-825ec163bd50)
 
 We have a DEMO mode for testing inside cornell box settings. You may replicate the results from the experiment section of our report using `make DEMO=1 && ./RayTracing`.  
