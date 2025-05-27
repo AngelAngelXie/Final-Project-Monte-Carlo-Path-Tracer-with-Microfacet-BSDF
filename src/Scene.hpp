@@ -30,7 +30,7 @@ class Scene {
   public:
     // setting up options
     Camera camera;
-    Vector3f backgroundColor = Vector3f(0.235294, 0.67451, 0.843137);
+    Vector3f backgroundColor = Vector3f(0, 0, 0);
 
     //environment map
     bool        useEnvMap   = false;

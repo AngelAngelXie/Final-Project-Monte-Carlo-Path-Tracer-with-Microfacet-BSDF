@@ -99,13 +99,12 @@ int main(int argc, char **argv) {
 #ifdef DEMO
     Material *light = new Material(
         ROUGH_CONDUCTOR,
-        4*(8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
+        3.9*(8.0f * Vector3f(0.747f + 0.058f, 0.747f + 0.258f, 0.747f) +
          15.6f * Vector3f(0.740f + 0.287f, 0.740f + 0.160f, 0.740f) +
          18.4f * Vector3f(0.737f + 0.642f, 0.737f + 0.159f, 0.737f)));
 
     MeshTriangle light_("../models/cornellbox/light.obj", light);
     MeshTriangle back("../models/cornellbox/floor.obj", rough_white_conductor);
-    MeshTriangle ground("../models/bottom.obj", rough_white_conductor);
     MeshTriangle left("../models/cornellbox/left.obj", rough_red_conductor);
     MeshTriangle right("../models/cornellbox/right.obj", gold_conductor);
 
@@ -116,7 +115,6 @@ int main(int argc, char **argv) {
     Sphere small_sphere({120, 390, 400}, 50, silver_mirror);
 
     scene.Add(&back);
-    scene.Add(&ground);
     scene.Add(&shortbox);
     scene.Add(&tallbox);
     scene.Add(&left);
