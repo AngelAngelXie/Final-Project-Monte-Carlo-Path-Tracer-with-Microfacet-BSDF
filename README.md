@@ -39,13 +39,10 @@ We have a DEMO mode for testing inside cornell box settings. You may replicate t
 
 # Build the project
 mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=RELEASE
+cmake .. -DCMAKE_BUILD_TYPE=RELEASE && make                 # Build for final scene (chessboard)
+cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DDEMO=1 && make        # Build with demo mode (material testing)   
 
-# Build options:
-make DEMO=1    # Build with demo mode (material testing)
-make            # Build for final scene (chessboard)
-
-# Specify your scene configurations according to the usage section below.
+# Specify your scene configurations inside your build's JSON file according to the usage section below.
 
 # Render image:
 ./RayTracing
