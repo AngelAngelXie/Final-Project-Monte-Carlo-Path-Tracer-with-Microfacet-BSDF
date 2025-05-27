@@ -216,9 +216,9 @@ int main(int argc, char **argv) {
                     scene.loadEnvMap(envPath);
                 } else if (is_v3(confScene["envMap"])) {
                     scene.backgroundColor = Vector3f(
-                        confScene["backgroundColor"][0],
-                        confScene["backgroundColor"][1],
-                        confScene["backgroundColor"][2]
+                        confScene["envMap"][0],
+                        confScene["envMap"][1],
+                        confScene["envMap"][2]
                     );
                 }
             }
@@ -311,7 +311,7 @@ int main(int argc, char **argv) {
     MeshTriangle light_("../models/light.obj", light, lightPosition);
 
     //  Scene building
-    // scene.Add(&wall);
+    scene.Add(&wall);
     scene.Add(&light_);
     scene.Add(&floor);
     scene.Add(&king);

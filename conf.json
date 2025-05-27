@@ -1,8 +1,8 @@
 {
   "_": "Example configuration file",
   "camera": {
-    "width": 384,
-    "height": 384,
+    "width": 1920,
+    "height": 1080,
     "fov": 70,
     "position": [278, 150, -2550],
     "target": [278, 0, 0],
@@ -14,7 +14,7 @@
     "apertureRadius": 10
   },
   "renderer": {
-    "spp":120,
+    "spp":32,
     "parrallelism": 8,
     "path": "output.png"
   },
@@ -42,12 +42,6 @@
     "soldierMaterials": ["smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "smooth_glass", "rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor","rough_white_conductor"],
     "wallMaterial": "rough_white_conductor",
     "floorMaterial": "silver_mirror",
-
-    "note_4": "setting texture to true will render the chessboard. setting to false will lead to a patternless floor",
-    "floor_isTextured": true,
-
-    "lightPosition": [278, 1200, 500],
-    "lightBrightness": 100.0,
 
     "note_4": "setting texture to true will render the chessboard. setting to false will lead to a patternless floor",
     "floor_isTextured": true,
